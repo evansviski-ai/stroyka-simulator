@@ -1,480 +1,300 @@
-```javascript
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js';
+```js
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
 
 const scene = new THREE.Scene();
-
-scene.background = new THREE.Color(0x87ceeb);
+scene.background = new THREE.Color(0x081225);
 
 const camera = new THREE.PerspectiveCamera(
-  60,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  5000
+    60,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
 );
 
-camera.position.set(60, 60, 60);
+camera.position.set(12, 12, 12);
+camera.lookAt(0, 0, 0);
 
-const renderer = new THREE.WebGLRenderer({
-  antialias:true
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+
+document.body.appendChild(renderer.domElement);
+
+
+
+
+
+/* ---------------- LIGHT ---------------- */
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x223344, 1.2);
+scene.add(hemi);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+
+dirLight.position.set(10, 20, 10);
+dirLight.castShadow = true;
+
+scene.add(dirLight);
+
+
+
+
+
+/* ---------------- GRID ---------------- */
+
+const grid = new THREE.GridHelper(50, 50, 0x3b82f6, 0x1e293b);
+scene.add(grid);
+
+
+
+
+
+/* ---------------- GROUND ---------------- */
+
+const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 50),
+    new THREE.MeshStandardMaterial({
+        color: 0x0f172a
+    })
+);
+
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+
+
+
+
+/* ---------------- ROLE UI ---------------- */
+
+const roleButtons = document.querySelectorAll(".role-btn");
+
+roleButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        roleButtons.forEach(b => {
+            b.classList.remove("active-role");
+        });
+
+        btn.classList.add("active-role");
+
+        console.log("ROLE:", btn.innerText);
+    });
 });
 
-renderer.setSize(
-  window.innerWidth - 320,
-  window.innerHeight
-);
 
-document
-  .getElementById('canvas-container')
-  .appendChild(renderer.domElement);
 
-const light = new THREE.DirectionalLight(0xffffff, 2);
 
-light.position.set(50,100,50);
 
-scene.add(light);
+/* ---------------- BLOCK TYPES ---------------- */
 
-scene.add(new THREE.AmbientLight(0xffffff, 1));
+let currentType = "cube";
 
-const gridSize = 40;
+const buildButtons = document.querySelectorAll(".build-btn");
 
-const tileSize = 4;
+buildButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
 
-const world = [];
+        currentType = btn.dataset.type;
 
-const terrainColors = {
-  grass:0x7ca84b,
-  hill:0x8b6f4e,
-  mountain:0x777777,
-  river:0x3fa9da
+        buildButtons.forEach(b => {
+            b.classList.remove("active-build");
+        });
+
+        btn.classList.add("active-build");
+
+        console.log("BUILD:", currentType);
+    });
+});
+
+
+
+
+
+/* ---------------- MATERIALS ---------------- */
+
+const materials = {
+    cube: new THREE.MeshStandardMaterial({
+        color: 0x94a3b8
+    }),
+
+    wall: new THREE.MeshStandardMaterial({
+        color: 0x64748b
+    }),
+
+    roof: new THREE.MeshStandardMaterial({
+        color: 0xdc2626
+    }),
+
+    glass: new THREE.MeshStandardMaterial({
+        color: 0x7dd3fc,
+        transparent: true,
+        opacity: 0.5
+    }),
+
+    door: new THREE.MeshStandardMaterial({
+        color: 0x78350f
+    })
 };
 
-function createTile(type,x,z,height=0){
 
-  const geo = new THREE.BoxGeometry(
-    tileSize,
-    tileSize + height,
-    tileSize
-  );
 
-  const mat = new THREE.MeshStandardMaterial({
-    color:terrainColors[type]
-  });
 
-  const mesh = new THREE.Mesh(geo,mat);
 
-  mesh.position.set(
-    x*tileSize,
-    height/2,
-    z*tileSize
-  );
-
-  mesh.userData = {
-    terrain:type,
-    gridX:x,
-    gridZ:z
-  };
-
-  scene.add(mesh);
-
-  return mesh;
-}
-
-for(let x=0;x<gridSize;x++){
-
-  world[x]=[];
-
-  for(let z=0;z<gridSize;z++){
-
-    let type='grass';
-    let h=0;
-
-    if(x<6 && z<6){
-      type='mountain';
-      h=10;
-    }
-
-    if(x>25 && z>25){
-      type='hill';
-      h=4;
-    }
-
-    if(
-      z===Math.floor(
-        10 + Math.sin(x*0.3)*5
-      )
-    ){
-      type='river';
-      h=-1;
-    }
-
-    world[x][z]=createTile(type,x,z,h);
-  }
-}
+/* ---------------- BUILDING ---------------- */
 
 const raycaster = new THREE.Raycaster();
-
 const mouse = new THREE.Vector2();
 
-const placedBlocks = [];
+window.addEventListener("click", onClick);
 
-let currentRole = null;
+function onClick(event) {
 
-let currentTool = 'wall';
+    if (event.target.closest(".sidebar")) return;
 
-const roleData = {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-  director:{
-    map:false,
-    tools:[]
-  },
+    raycaster.setFromCamera(mouse, camera);
 
-  finance:{
-    map:false,
-    tools:[]
-  },
+    const intersects = raycaster.intersectObject(ground);
 
-  workers:{
-    map:true,
-    tools:[
-      'wall',
-      'window',
-      'door',
-      'roof'
-    ]
-  },
+    if (intersects.length === 0) return;
 
-  architect:{
-    map:true,
-    tools:[]
-  },
+    const point = intersects[0].point;
 
-  engineer:{
-    map:true,
-    tools:[]
-  },
+    const x = Math.round(point.x);
+    const z = Math.round(point.z);
 
-  pr:{
-    map:false,
-    tools:[]
-  },
+    createBlock(x, z);
+}
 
-  sales:{
-    map:false,
-    tools:[]
-  },
+function createBlock(x, z) {
 
-  utilities:{
-    map:true,
-    tools:[
-      'pipe',
-      'electricity'
-    ]
-  },
+    let geometry;
+    let material;
 
-  hr:{
-    map:false,
-    tools:[]
-  }
-};
+    switch (currentType) {
 
-const roleButtons =
-  document.querySelectorAll('.role-btn');
+        case "cube":
+            geometry = new THREE.BoxGeometry(1, 1, 1);
+            material = materials.cube;
+            break;
 
-roleButtons.forEach(btn=>{
+        case "wall":
+            geometry = new THREE.BoxGeometry(2, 1, 0.3);
+            material = materials.wall;
+            break;
 
-  btn.onclick=()=>{
+        case "roof":
+            geometry = new THREE.ConeGeometry(1, 1, 4);
+            material = materials.roof;
+            break;
 
-    currentRole=btn.dataset.role;
+        case "window":
+            geometry = new THREE.BoxGeometry(1.2, 1.2, 0.1);
+            material = materials.glass;
+            break;
 
-    startRole(currentRole);
-  };
+        case "door":
+            geometry = new THREE.BoxGeometry(1, 2, 0.2);
+            material = materials.door;
+            break;
 
+        default:
+            geometry = new THREE.BoxGeometry(1, 1, 1);
+            material = materials.cube;
+    }
+
+    const mesh = new THREE.Mesh(geometry, material);
+
+    mesh.position.set(x, 0.5, z);
+
+    if (currentType === "door") {
+        mesh.position.y = 1;
+    }
+
+    if (currentType === "roof") {
+        mesh.position.y = 1;
+        mesh.rotation.y = Math.PI / 4;
+    }
+
+    if (currentType === "window") {
+        mesh.position.y = 1.2;
+    }
+
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    scene.add(mesh);
+}
+
+
+
+
+
+/* ---------------- CAMERA CONTROL ---------------- */
+
+const keys = {};
+
+window.addEventListener("keydown", e => {
+    keys[e.key.toLowerCase()] = true;
 });
 
-function startRole(role){
+window.addEventListener("keyup", e => {
+    keys[e.key.toLowerCase()] = false;
+});
 
-  document
-    .getElementById('role-select')
-    .classList.add('hidden');
+window.addEventListener("wheel", e => {
 
-  document
-    .getElementById('role-ui')
-    .classList.remove('hidden');
+    camera.position.y += e.deltaY * 0.01;
 
-  document
-    .getElementById('role-title')
-    .innerText='Роль: '+role;
+    camera.position.y = Math.max(4, Math.min(40, camera.position.y));
+});
 
-  buildTools(role);
+function updateCamera() {
 
-  buildHUD(role);
+    const speed = 0.15;
 
-  if(!roleData[role].map){
+    if (keys["w"]) camera.position.z -= speed;
+    if (keys["s"]) camera.position.z += speed;
+    if (keys["a"]) camera.position.x -= speed;
+    if (keys["d"]) camera.position.x += speed;
 
-    renderer.domElement.style.display='none';
-
-  }else{
-
-    renderer.domElement.style.display='block';
-  }
+    camera.lookAt(0, 0, 0);
 }
 
-function buildTools(role){
 
-  const toolsDiv =
-    document.getElementById('tools');
 
-  toolsDiv.innerHTML='';
 
-  roleData[role].tools.forEach(tool=>{
 
-    const btn =
-      document.createElement('button');
+/* ---------------- RESIZE ---------------- */
 
-    btn.className='tool-btn';
+window.addEventListener("resize", () => {
 
-    btn.innerText=tool;
+    camera.aspect = window.innerWidth / window.innerHeight;
 
-    btn.onclick=()=>{
+    camera.updateProjectionMatrix();
 
-      currentTool=tool;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
 
-      document
-        .querySelectorAll('.tool-btn')
-        .forEach(b=>b.classList.remove('tool-active'));
 
-      btn.classList.add('tool-active');
-    };
 
-    toolsDiv.appendChild(btn);
-  });
-}
 
-function buildHUD(role){
 
-  const hud=document.getElementById('hud');
+/* ---------------- LOOP ---------------- */
 
-  if(role==='finance'){
+function animate() {
 
-    hud.innerHTML=`
-      <b>Бюджет:</b> 12 000 000 ₽<br>
-      <b>Материалы:</b> 340 блоков
-    `;
+    requestAnimationFrame(animate);
 
-    return;
-  }
+    updateCamera();
 
-  if(role==='director'){
-
-    hud.innerHTML=`
-      <b>KPI:</b><br>
-      - Построить 15 домов<br>
-      - Не выйти за бюджет
-    `;
-
-    return;
-  }
-
-  hud.innerHTML='Активная игровая сессия';
-}
-
-function createBlock(x,y,z,color){
-
-  const geo = new THREE.BoxGeometry(
-    tileSize,
-    tileSize,
-    tileSize
-  );
-
-  const mat = new THREE.MeshStandardMaterial({
-    color
-  });
-
-  const mesh = new THREE.Mesh(geo,mat);
-
-  mesh.position.set(x,y,z);
-
-  scene.add(mesh);
-
-  placedBlocks.push(mesh);
-
-  saveWorld();
-}
-
-function toolColor(tool){
-
-  switch(tool){
-
-    case 'wall':
-      return 0xd1d5db;
-
-    case 'window':
-      return 0x60a5fa;
-
-    case 'door':
-      return 0x92400e;
-
-    case 'roof':
-      return 0xb91c1c;
-
-    case 'pipe':
-      return 0x2563eb;
-
-    case 'electricity':
-      return 0xfacc15;
-
-    default:
-      return 0xffffff;
-  }
-}
-
-renderer.domElement.addEventListener(
-  'click',
-  event=>{
-
-    if(!currentRole) return;
-
-    if(!roleData[currentRole].map) return;
-
-    if(
-      currentRole!=='workers' &&
-      currentRole!=='utilities'
-    ) return;
-
-    mouse.x =
-      ((event.clientX-320) /
-      (window.innerWidth-320))*2-1;
-
-    mouse.y =
-      -(event.clientY /
-      window.innerHeight)*2+1;
-
-    raycaster.setFromCamera(mouse,camera);
-
-    const intersects =
-      raycaster.intersectObjects(scene.children);
-
-    if(intersects.length>0){
-
-      const p = intersects[0].point;
-
-      const gx =
-        Math.round(p.x/tileSize);
-
-      const gz =
-        Math.round(p.z/tileSize);
-
-      const gy =
-        tileSize/2;
-
-      createBlock(
-        gx*tileSize,
-        gy+2,
-        gz*tileSize,
-        toolColor(currentTool)
-      );
-    }
-  }
-);
-
-function saveWorld(){
-
-  const data = placedBlocks.map(b=>({
-
-    x:b.position.x,
-    y:b.position.y,
-    z:b.position.z,
-    c:b.material.color.getHex()
-
-  }));
-
-  localStorage.setItem(
-    'stroyka_world',
-    JSON.stringify(data)
-  );
-}
-
-function loadWorld(){
-
-  const raw =
-    localStorage.getItem('stroyka_world');
-
-  if(!raw) return;
-
-  const data=JSON.parse(raw);
-
-  data.forEach(d=>{
-
-    createBlock(
-      d.x,
-      d.y,
-      d.z,
-      d.c
-    );
-  });
-}
-
-loadWorld();
-
-document
-  .getElementById('reset-btn')
-  .onclick=()=>{
-
-    localStorage.removeItem(
-      'stroyka_world'
-    );
-
-    location.reload();
-  };
-
-const keys={};
-
-window.addEventListener(
-  'keydown',
-  e=>keys[e.key]=true
-);
-
-window.addEventListener(
-  'keyup',
-  e=>keys[e.key]=false
-);
-
-function updateCamera(){
-
-  if(keys['w']) camera.position.z-=1;
-  if(keys['s']) camera.position.z+=1;
-
-  if(keys['a']) camera.position.x-=1;
-  if(keys['d']) camera.position.x+=1;
-}
-
-function animate(){
-
-  requestAnimationFrame(animate);
-
-  updateCamera();
-
-  camera.lookAt(0,0,0);
-
-  renderer.render(scene,camera);
+    renderer.render(scene, camera);
 }
 
 animate();
-
-window.addEventListener(
-  'resize',
-  ()=>{
-
-    renderer.setSize(
-      window.innerWidth-320,
-      window.innerHeight
-    );
-
-    camera.aspect =
-      (window.innerWidth-320) /
-      window.innerHeight;
-
-    camera.updateProjectionMatrix();
-  }
-);
 ```
