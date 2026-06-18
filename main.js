@@ -1,259 +1,179 @@
-
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.164/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js';
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87b7ff);
+scene.background = new THREE.Color(0x0b1630);
 
 const camera = new THREE.OrthographicCamera(
-window.innerWidth / -60,
-window.innerWidth / 60,
-window.innerHeight / 60,
-window.innerHeight / -60,
-0.1,
-5000
+  window.innerWidth / -40,
+  window.innerWidth / 40,
+  window.innerHeight / 40,
+  window.innerHeight / -40,
+  1,
+  2000
 );
 
-camera.position.set(120,120,120);
+camera.position.set(60, 60, 60);
+camera.lookAt(0, 0, 0);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
+const renderer = new THREE.WebGLRenderer({
+  antialias: true
+});
+
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-
-scene.add(new THREE.AmbientLight(0xffffff,1.1));
-
-const light = new THREE.DirectionalLight(0xffffff,1.5);
-light.position.set(120,200,120);
+const light = new THREE.DirectionalLight(0xffffff, 1.2);
+light.position.set(50, 100, 50);
 scene.add(light);
 
-const MAP_SIZE = 80;
-const TILE = 2;
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
-const terrain = [];
+const MAP_SIZE = 100;
+
+const tileGeo = new THREE.BoxGeometry(1, 0.2, 1);
+
+for(let x = 0; x < MAP_SIZE; x++) {
+  for(let z = 0; z < MAP_SIZE; z++) {
+
+    let color = 0x7CA84B;
+
+    const rand = Math.random();
+
+    if(rand > 0.96) color = 0x888888;
+    if(rand > 0.90 && rand < 0.96) color = 0x8B6F4E;
+    if(z > 45 && z < 55) color = 0x3FA9DA;
+
+    const mat = new THREE.MeshLambertMaterial({
+      color
+    });
+
+    const tile = new THREE.Mesh(tileGeo, mat);
+
+    tile.position.set(x, 0, z);
+
+    scene.add(tile);
+  }
+}
+
 const objects = [];
 
-const mats = {
-grass:new THREE.MeshStandardMaterial({color:0x7CA84B}),
-hill:new THREE.MeshStandardMaterial({color:0x8B6F4E}),
-water:new THREE.MeshStandardMaterial({color:0x3FA9DA,transparent:true,opacity:0.8}),
-mountain:new THREE.MeshStandardMaterial({color:0x9B9B9F})
-};
+const cubeGeo = new THREE.BoxGeometry(1,1,1);
 
-for(let x=0;x<MAP_SIZE;x++){
+let currentTool = 'cube';
 
-terrain[x]=[];
+document.querySelectorAll('button').forEach(btn => {
+  btn.onclick = () => {
+    currentTool = btn.innerText.toLowerCase();
+  };
+});
 
-for(let z=0;z<MAP_SIZE;z++){
+window.addEventListener('click', (e) => {
 
-let type='grass';
-let h=0;
+  const mouse = new THREE.Vector2(
+    (e.clientX / window.innerWidth) * 2 - 1,
+    -(e.clientY / window.innerHeight) * 2 + 1
+  );
 
-const d1=Math.sqrt((x-15)*(x-15)+(z-15)*(z-15));
-if(d1<12){type='mountain';h=4+Math.random()*3;}
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(mouse, camera);
 
-const d2=Math.sqrt((x-62)*(x-62)+(z-62)*(z-62));
-if(d2<9){type='hill';h=2;}
+  const intersects = raycaster.intersectObjects(scene.children);
 
-if(Math.abs(z-(40+Math.sin(x/8)*7))<2){type='water';h=-0.2;}
+  if(intersects.length > 0) {
 
-const tile=new THREE.Mesh(
-new THREE.BoxGeometry(TILE,0.5,TILE),
-mats[type]
+    const point = intersects[0].point;
+
+    const x = Math.floor(point.x);
+    const z = Math.floor(point.z);
+
+    let y = 0;
+
+    objects.forEach(o => {
+      if(o.x === x && o.z === z) {
+        y++;
+      }
+    });
+
+    let color = 0xffaa00;
+
+    if(currentTool === 'стена') color = 0xb87333;
+    if(currentTool === 'окно') color = 0x87ceeb;
+    if(currentTool === 'дверь') color = 0x654321;
+    if(currentTool === 'крыша') color = 0xaa0000;
+
+    const mat = new THREE.MeshLambertMaterial({
+      color
+    });
+
+    const cube = new THREE.Mesh(cubeGeo, mat);
+
+    cube.position.set(x, y + 0.5, z);
+
+    scene.add(cube);
+
+    objects.push({
+      x,
+      y,
+      z
+    });
+
+    localStorage.setItem(
+      'buildmap',
+      JSON.stringify(objects)
+    );
+  }
+});
+
+const saved = JSON.parse(
+  localStorage.getItem('buildmap') || '[]'
 );
 
-tile.position.set(x*TILE,h/2,z*TILE);
-tile.scale.y=Math.max(0.2,h+0.5);
+saved.forEach(s => {
 
-tile.userData={terrain:true,type,x,z};
+  const mat = new THREE.MeshLambertMaterial({
+    color: 0xffaa00
+  });
 
-scene.add(tile);
+  const cube = new THREE.Mesh(cubeGeo, mat);
 
-terrain[x][z]=tile;
+  cube.position.set(
+    s.x,
+    s.y + 0.5,
+    s.z
+  );
 
-}
+  scene.add(cube);
 
-}
-
-function createPiece(type){
-
-let geo;
-let mat;
-
-if(type==='cube'){
-geo=new THREE.BoxGeometry(1.8,1.8,1.8);
-mat=new THREE.MeshStandardMaterial({color:0xff7847});
-}
-
-if(type==='wall'){
-geo=new THREE.BoxGeometry(2,2,0.4);
-mat=new THREE.MeshStandardMaterial({color:0x8c92ff});
-}
-
-if(type==='window'){
-geo=new THREE.BoxGeometry(1.8,1.4,0.3);
-mat=new THREE.MeshStandardMaterial({color:0x5eead4,transparent:true,opacity:0.8});
-}
-
-if(type==='door'){
-geo=new THREE.BoxGeometry(1.2,2,0.3);
-mat=new THREE.MeshStandardMaterial({color:0x7c4a21});
-}
-
-if(type==='roof'){
-geo=new THREE.ConeGeometry(1.7,1.3,4);
-mat=new THREE.MeshStandardMaterial({color:0xffc93c});
-}
-
-const mesh=new THREE.Mesh(geo,mat);
-return mesh;
-
-}
-
-let currentTool='cube';
-let rotationY=0;
-
-window.selectTool=function(t){
-currentTool=t;
-}
-
-window.addEventListener('keydown',e=>{
-if(e.key.toLowerCase()==='r'){
-rotationY+=Math.PI/2;
-}
+  objects.push(s);
 });
 
-const raycaster=new THREE.Raycaster();
-const mouse=new THREE.Vector2();
+window.addEventListener('keydown', e => {
 
-renderer.domElement.addEventListener('click',e=>{
-
-mouse.x=(e.clientX/window.innerWidth)*2-1;
-mouse.y=-(e.clientY/window.innerHeight)*2+1;
-
-raycaster.setFromCamera(mouse,camera);
-
-const hits=raycaster.intersectObjects(scene.children);
-
-if(!hits.length)return;
-
-const obj=hits[0].object;
-
-if(!obj.userData.terrain)return;
-
-const tx=obj.userData.x;
-const tz=obj.userData.z;
-
-if(obj.userData.type==='water'||obj.userData.type==='mountain'){
-return;
-}
-
-if(currentTool==='delete'){
-
-for(let i=objects.length-1;i>=0;i--){
-
-const o=objects[i];
-
-if(o.userData.x===tx && o.userData.z===tz){
-scene.remove(o);
-objects.splice(i,1);
-break;
-}
-
-}
-
-saveWorld();
-return;
-
-}
-
-let top=0;
-
-objects.forEach(o=>{
-if(o.userData.x===tx && o.userData.z===tz){
-top=Math.max(top,o.userData.level+1);
-}
-});
-
-const piece=createPiece(currentTool);
-
-piece.position.set(tx*TILE,top*2+2,tz*TILE);
-piece.rotation.y=rotationY;
-
-piece.userData={
-x:tx,
-z:tz,
-level:top,
-type:currentTool,
-rotation:rotationY
-};
-
-scene.add(piece);
-objects.push(piece);
-
-saveWorld();
+  if(e.key === 'w') camera.position.z -= 2;
+  if(e.key === 's') camera.position.z += 2;
+  if(e.key === 'a') camera.position.x -= 2;
+  if(e.key === 'd') camera.position.x += 2;
 
 });
 
-function saveWorld(){
+window.addEventListener('wheel', e => {
 
-const data=objects.map(o=>({
-x:o.userData.x,
-z:o.userData.z,
-level:o.userData.level,
-type:o.userData.type,
-rotation:o.userData.rotation
-}));
+  camera.zoom += e.deltaY * -0.001;
 
-localStorage.setItem('stroyka_save',JSON.stringify(data));
+  camera.zoom = Math.min(
+    Math.max(camera.zoom, 0.5),
+    4
+  );
 
-}
-
-function loadWorld(){
-
-const raw=localStorage.getItem('stroyka_save');
-if(!raw)return;
-
-const data=JSON.parse(raw);
-
-data.forEach(d=>{
-
-const piece=createPiece(d.type);
-
-piece.position.set(d.x*TILE,d.level*2+2,d.z*TILE);
-piece.rotation.y=d.rotation;
-
-piece.userData=d;
-
-scene.add(piece);
-objects.push(piece);
+  camera.updateProjectionMatrix();
 
 });
 
-}
+function animate() {
 
-loadWorld();
+  requestAnimationFrame(animate);
 
-window.addEventListener('resize',()=>{
-
-camera.left = window.innerWidth / -60;
-camera.right = window.innerWidth / 60;
-camera.top = window.innerHeight / 60;
-camera.bottom = window.innerHeight / -60;
-
-camera.updateProjectionMatrix();
-
-renderer.setSize(window.innerWidth, window.innerHeight);
-
-});
-
-function animate(){
-requestAnimationFrame(animate);
-controls.update();
-renderer.render(scene,camera);
+  renderer.render(scene, camera);
 }
 
 animate();
