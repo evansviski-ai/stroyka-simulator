@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>СТРОЙКА — Modular Build Sandbox</title>
+<style>
+body{margin:0;overflow:hidden;background:#111827;font-family:Arial}
+#ui{position:absolute;left:12px;top:12px;width:280px;background:rgba(17,24,39,.94);border:1px solid #374151;border-radius:14px;padding:14px;color:white;z-index:20}
+button{width:100%;margin-top:8px;border:none;border-radius:10px;padding:11px;font-weight:bold;cursor:pointer;background:#f59e0b;color:#111827}
+.section{margin-top:14px;padding-top:10px;border-top:1px solid #374151}
+canvas{display:block}
+</style>
+</head>
+<body>
+
+<div id="ui">
+<h2>СТРОЙКА</h2>
+
+<div class="section">
+<button onclick="selectTool('cube')">Куб</button>
+<button onclick="selectTool('wall')">Стена</button>
+<button onclick="selectTool('window')">Окно</button>
+<button onclick="selectTool('door')">Дверь</button>
+<button onclick="selectTool('roof')">Крыша</button>
+<button onclick="selectTool('delete')">Снос</button>
+</div>
+
+<div class="section">
+WASD — движение<br>
+Колесо — zoom<br>
+R — вращение<br>
+ЛКМ — поставить
+</div>
+</div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>

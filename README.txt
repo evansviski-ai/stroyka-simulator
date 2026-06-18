@@ -1,0 +1,1 @@
+Загрузите файлы на GitHub Pages и откройте index.html через Pages.
