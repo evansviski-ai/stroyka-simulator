@@ -1,39 +1,194 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>СТРОЙКА — Modular Build Sandbox</title>
-<style>
-body{margin:0;overflow:hidden;background:#111827;font-family:Arial}
-#ui{position:absolute;left:12px;top:12px;width:280px;background:rgba(17,24,39,.94);border:1px solid #374151;border-radius:14px;padding:14px;color:white;z-index:20}
-button{width:100%;margin-top:8px;border:none;border-radius:10px;padding:11px;font-weight:bold;cursor:pointer;background:#f59e0b;color:#111827}
-.section{margin-top:14px;padding-top:10px;border-top:1px solid #374151}
-canvas{display:block}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Стройка Simulator</title>
+
+  <style>
+    html, body {
+      margin:0;
+      padding:0;
+      overflow:hidden;
+      font-family: Inter, sans-serif;
+      background:#111827;
+      color:white;
+    }
+
+    #ui {
+      position:absolute;
+      top:0;
+      left:0;
+      width:320px;
+      height:100vh;
+      background:#1f2937;
+      z-index:10;
+      overflow:auto;
+      padding:16px;
+      box-sizing:border-box;
+      border-right:2px solid #374151;
+    }
+
+    h1 {
+      font-size:24px;
+      margin-top:0;
+      color:#fbbf24;
+    }
+
+    h2 {
+      margin-top:24px;
+      font-size:18px;
+      color:#93c5fd;
+    }
+
+    .role-btn,
+    .tool-btn,
+    .action-btn {
+      width:100%;
+      margin-bottom:10px;
+      padding:12px;
+      border:none;
+      cursor:pointer;
+      border-radius:10px;
+      background:#374151;
+      color:white;
+      font-size:14px;
+      transition:0.2s;
+    }
+
+    .role-btn:hover,
+    .tool-btn:hover,
+    .action-btn:hover {
+      background:#4b5563;
+    }
+
+    .tool-active {
+      background:#f59e0b !important;
+      color:black;
+      font-weight:bold;
+    }
+
+    #hud {
+      margin-top:20px;
+      padding:12px;
+      background:#111827;
+      border-radius:10px;
+    }
+
+    #canvas-container {
+      position:absolute;
+      left:320px;
+      top:0;
+      right:0;
+      bottom:0;
+    }
+
+    #chat {
+      margin-top:20px;
+    }
+
+    #chat-log {
+      height:160px;
+      overflow:auto;
+      background:#111827;
+      padding:8px;
+      border-radius:10px;
+      margin-bottom:10px;
+      font-size:12px;
+    }
+
+    #chat-input {
+      width:100%;
+      box-sizing:border-box;
+      padding:10px;
+      border:none;
+      border-radius:8px;
+    }
+
+    .hidden {
+      display:none;
+    }
+
+  </style>
 </head>
 <body>
 
 <div id="ui">
-<h2>СТРОЙКА</h2>
 
-<div class="section">
-<button onclick="selectTool('cube')">Куб</button>
-<button onclick="selectTool('wall')">Стена</button>
-<button onclick="selectTool('window')">Окно</button>
-<button onclick="selectTool('door')">Дверь</button>
-<button onclick="selectTool('roof')">Крыша</button>
-<button onclick="selectTool('delete')">Снос</button>
+  <h1>СТРОЙКА</h1>
+
+  <div id="role-select">
+
+    <h2>Выбор роли</h2>
+
+    <button class="role-btn" data-role="director">
+      Совет директоров
+    </button>
+
+    <button class="role-btn" data-role="finance">
+      Финансовый отдел
+    </button>
+
+    <button class="role-btn" data-role="workers">
+      Бригада рабочих
+    </button>
+
+    <button class="role-btn" data-role="architect">
+      Архитектурное бюро
+    </button>
+
+    <button class="role-btn" data-role="engineer">
+      Инженерный отдел
+    </button>
+
+    <button class="role-btn" data-role="pr">
+      PR
+    </button>
+
+    <button class="role-btn" data-role="sales">
+      Продажи
+    </button>
+
+    <button class="role-btn" data-role="utilities">
+      ЖКХ
+    </button>
+
+    <button class="role-btn" data-role="hr">
+      HR
+    </button>
+
+  </div>
+
+  <div id="role-ui" class="hidden">
+
+    <h2 id="role-title"></h2>
+
+    <div id="tools"></div>
+
+    <div id="hud"></div>
+
+    <div id="chat">
+      <h2>Чат отдела</h2>
+
+      <div id="chat-log"></div>
+
+      <input id="chat-input" placeholder="Сообщение..." />
+    </div>
+
+    <button class="action-btn" id="reset-btn">
+      Сбросить сессию
+    </button>
+
+  </div>
+
 </div>
 
-<div class="section">
-WASD — движение<br>
-Колесо — zoom<br>
-R — вращение<br>
-ЛКМ — поставить
-</div>
-</div>
+<div id="canvas-container"></div>
 
-<script type="module" src="main.js"></script>
+<script type="module" src="./main.js"></script>
+
 </body>
 </html>
+```
