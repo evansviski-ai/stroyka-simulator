@@ -1,26 +1,25 @@
-```js
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
 import {
     getDatabase,
     ref,
-    set,
+    push,
     onValue,
     remove,
-    get
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js";
+    set
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 
 
 
 
-/* =========================================================
+/* ======================================================
    FIREBASE
-========================================================= */
+====================================================== */
 
 const firebaseConfig = {
 
@@ -33,11 +32,14 @@ const firebaseConfig = {
 
     projectId: "stroyka-bs",
 
-    storageBucket: "stroyka-bs.firebasestorage.app",
+    storageBucket:
+        "stroyka-bs.firebasestorage.app",
 
-    messagingSenderId: "555859205094",
+    messagingSenderId:
+        "555859205094",
 
-    appId: "1:555859205094:web:0a243c20597ee165161427"
+    appId:
+        "1:555859205094:web:0a243c20597ee165161427"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -48,194 +50,29 @@ const db = getDatabase(app);
 
 
 
-/* =========================================================
-   GLOBAL STATE
-========================================================= */
-
-const state = {
-
-    role: null,
-
-    currentType: "cube",
-
-    money: 100000
-};
-
-
-
-
-
-/* =========================================================
-   UI
-========================================================= */
-
-const roleButtons = document.querySelectorAll(".role-btn");
-
-const buildButtons = document.querySelectorAll(".build-btn");
-
-const roleValue = document.getElementById("role-value");
-
-const moneyValue = document.getElementById("money-value");
-
-const buildToolbar = document.getElementById("build-toolbar");
-
-const financeUI = document.getElementById("finance-ui");
-
-const directorsUI = document.getElementById("directors-ui");
-
-const prUI = document.getElementById("pr-ui");
-
-const resetBtn = document.getElementById("reset-world-btn");
-
-
-
-
-
-/* =========================================================
-   ROLE SCREENS
-========================================================= */
-
-function hideAllScreens() {
-
-    buildToolbar.classList.add("hidden");
-
-    if (financeUI) financeUI.classList.add("hidden");
-
-    if (directorsUI) directorsUI.classList.add("hidden");
-
-    if (prUI) prUI.classList.add("hidden");
-}
-
-function setRole(role) {
-
-    state.role = role;
-
-    roleValue.innerText = role.toUpperCase();
-
-    hideAllScreens();
-
-
-
-
-
-    if (role === "workers") {
-
-        buildToolbar.classList.remove("hidden");
-
-        renderer.domElement.style.display = "block";
-    }
-
-    else if (role === "finance") {
-
-        financeUI?.classList.remove("hidden");
-
-        renderer.domElement.style.display = "none";
-    }
-
-    else if (role === "directors") {
-
-        directorsUI?.classList.remove("hidden");
-
-        renderer.domElement.style.display = "none";
-    }
-
-    else if (role === "pr") {
-
-        prUI?.classList.remove("hidden");
-
-        renderer.domElement.style.display = "none";
-    }
-
-    else {
-
-        renderer.domElement.style.display = "none";
-    }
-}
-
-
-
-
-
-roleButtons.forEach(btn => {
-
-    btn.addEventListener("click", () => {
-
-        roleButtons.forEach(b => {
-
-            b.classList.remove("active-role");
-        });
-
-        btn.classList.add("active-role");
-
-        setRole(btn.dataset.role);
-    });
-});
-
-
-
-
-
-/* =========================================================
-   BUILD TYPES
-========================================================= */
-
-buildButtons.forEach(btn => {
-
-    btn.addEventListener("click", () => {
-
-        state.currentType = btn.dataset.type;
-
-        buildButtons.forEach(b => {
-
-            b.classList.remove("active-build");
-        });
-
-        btn.classList.add("active-build");
-    });
-});
-
-
-
-
-
-/* =========================================================
+/* ======================================================
    THREE
-========================================================= */
+====================================================== */
 
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x031126);
-
-
-
-
+scene.background = new THREE.Color(0x07111f);
 
 const camera = new THREE.PerspectiveCamera(
-
     60,
-
     window.innerWidth / window.innerHeight,
-
     0.1,
-
-    1000
+    2000
 );
 
-camera.position.set(20, 20, 20);
-
-
-
-
+camera.position.set(35, 30, 35);
 
 const renderer = new THREE.WebGLRenderer({
-
     antialias: true
 });
 
 renderer.setSize(
-
     window.innerWidth,
-
     window.innerHeight
 );
 
@@ -247,56 +84,47 @@ document.body.appendChild(renderer.domElement);
 
 
 
-/* =========================================================
+/* ======================================================
    ORBIT CAMERA
-========================================================= */
+====================================================== */
 
 const controls = new OrbitControls(
-
     camera,
-
     renderer.domElement
 );
 
 controls.enableDamping = true;
 
-controls.dampingFactor = 0.05;
+controls.target.set(0, 0, 0);
 
 controls.maxPolarAngle = Math.PI / 2.1;
 
-controls.target.set(0, 0, 0);
+controls.minDistance = 8;
+
+controls.maxDistance = 120;
 
 
 
 
 
-/* =========================================================
+/* ======================================================
    LIGHT
-========================================================= */
+====================================================== */
 
 const hemi = new THREE.HemisphereLight(
-
     0xffffff,
-
     0x223344,
-
-    1.4
+    1.5
 );
 
 scene.add(hemi);
 
-
-
-
-
 const dir = new THREE.DirectionalLight(
-
     0xffffff,
-
-    1.5
+    2
 );
 
-dir.position.set(20, 30, 10);
+dir.position.set(20, 40, 20);
 
 dir.castShadow = true;
 
@@ -306,17 +134,16 @@ scene.add(dir);
 
 
 
-/* =========================================================
-   GROUND
-========================================================= */
+/* ======================================================
+   MAP
+====================================================== */
 
 const ground = new THREE.Mesh(
 
     new THREE.PlaneGeometry(200, 200),
 
     new THREE.MeshStandardMaterial({
-
-        color: 0x0f172a
+        color: 0x183046
     })
 );
 
@@ -330,14 +157,14 @@ scene.add(ground);
 
 
 
+/* ======================================================
+   GRID
+====================================================== */
+
 const grid = new THREE.GridHelper(
-
     200,
-
     200,
-
     0x3b82f6,
-
     0x1e293b
 );
 
@@ -347,54 +174,94 @@ scene.add(grid);
 
 
 
-/* =========================================================
+/* ======================================================
+   HILLS
+====================================================== */
+
+function createHill(x, z, size, color) {
+
+    for (let i = 0; i < size; i++) {
+
+        for (let j = 0; j < size; j++) {
+
+            const height =
+                Math.floor(
+                    Math.random() * 4
+                ) + 1;
+
+            for (let y = 0; y < height; y++) {
+
+                const cube = new THREE.Mesh(
+
+                    new THREE.BoxGeometry(2, 2, 2),
+
+                    new THREE.MeshStandardMaterial({
+                        color
+                    })
+                );
+
+                cube.position.set(
+                    x + i * 2,
+                    y * 2,
+                    z + j * 2
+                );
+
+                cube.castShadow = true;
+
+                cube.receiveShadow = true;
+
+                scene.add(cube);
+            }
+        }
+    }
+}
+
+
+
+
+
+/* ======================================================
+   GENERATED LANDSCAPE
+====================================================== */
+
+createHill(-35, -35, 8, 0x3b7d4f);
+
+createHill(20, 20, 10, 0x777777);
+
+
+
+
+
+/* ======================================================
    MATERIALS
-========================================================= */
+====================================================== */
 
 const materials = {
 
     cube: new THREE.MeshStandardMaterial({
-
-        color: 0xd1d5db
+        color: 0xcbd5e1
     }),
 
     wallX: new THREE.MeshStandardMaterial({
-
-        color: 0x64748b
-    }),
-
-    wallZ: new THREE.MeshStandardMaterial({
-
         color: 0x94a3b8
     }),
 
-    roof: new THREE.MeshStandardMaterial({
+    wallZ: new THREE.MeshStandardMaterial({
+        color: 0x64748b
+    }),
 
+    roof: new THREE.MeshStandardMaterial({
         color: 0xdc2626
     }),
 
-    glass: new THREE.MeshStandardMaterial({
-
+    window: new THREE.MeshStandardMaterial({
         color: 0x7dd3fc,
-
         transparent: true,
-
         opacity: 0.5
     }),
 
     door: new THREE.MeshStandardMaterial({
-
         color: 0x78350f
-    }),
-
-    mountain: new THREE.MeshStandardMaterial({
-
-        color: 0x6b7280
-    }),
-
-    hill: new THREE.MeshStandardMaterial({
-
-        color: 0x22c55e
     })
 };
 
@@ -402,488 +269,575 @@ const materials = {
 
 
 
-/* =========================================================
-   MAP
-========================================================= */
+/* ======================================================
+   STATE
+====================================================== */
 
-function createMountain() {
+let currentRole = null;
 
-    for (let x = -25; x < -15; x++) {
+let currentType = "cube";
 
-        for (let z = -25; z < -15; z++) {
+const placedMeshes = {};
 
-            const h = Math.floor(
 
-                Math.random() * 5
-            ) + 2;
 
-            for (let y = 0; y < h; y++) {
 
-                const cube = new THREE.Mesh(
 
-                    new THREE.BoxGeometry(1,1,1),
+/* ======================================================
+   UI
+====================================================== */
 
-                    materials.mountain
+const roleValue =
+    document.getElementById("role-value");
+
+const buildToolbar =
+    document.getElementById("build-toolbar");
+
+const directorsUI =
+    document.getElementById("directors-ui");
+
+const financeUI =
+    document.getElementById("finance-ui");
+
+const prUI =
+    document.getElementById("pr-ui");
+
+
+
+
+
+/* ======================================================
+   ROLE SWITCH
+====================================================== */
+
+document
+    .querySelectorAll(".role-btn")
+    .forEach(btn => {
+
+        btn.addEventListener("click", () => {
+
+            currentRole =
+                btn.dataset.role;
+
+            roleValue.innerText =
+                btn.innerText;
+
+            document
+                .querySelectorAll(".role-btn")
+                .forEach(b =>
+                    b.classList.remove("active-role")
                 );
 
-                cube.position.set(
+            btn.classList.add("active-role");
 
-                    x,
 
-                    y + 0.5,
 
-                    z
+
+
+            directorsUI.classList.add("hidden");
+
+            financeUI.classList.add("hidden");
+
+            prUI.classList.add("hidden");
+
+            buildToolbar.classList.add("hidden");
+
+
+
+
+
+            if (currentRole === "workers") {
+
+                buildToolbar.classList.remove(
+                    "hidden"
                 );
 
-                scene.add(cube);
-            }
-        }
-    }
-}
+                ground.visible = true;
 
-function createHill() {
-
-    for (let x = 15; x < 25; x++) {
-
-        for (let z = 15; z < 25; z++) {
-
-            const h = Math.floor(
-
-                Math.random() * 3
-            ) + 1;
-
-            for (let y = 0; y < h; y++) {
-
-                const cube = new THREE.Mesh(
-
-                    new THREE.BoxGeometry(1,1,1),
-
-                    materials.hill
-                );
-
-                cube.position.set(
-
-                    x,
-
-                    y + 0.5,
-
-                    z
-                );
-
-                scene.add(cube);
-            }
-        }
-    }
-}
-
-createMountain();
-
-createHill();
-
-
-
-
-
-/* =========================================================
-   MULTIPLAYER OBJECTS
-========================================================= */
-
-const objects = {};
-
-function createGeometry(type) {
-
-    switch (type) {
-
-        case "cube":
-            return new THREE.BoxGeometry(1,1,1);
-
-        case "wall":
-
-            if (Math.random() > 0.5) {
-
-                return new THREE.BoxGeometry(2,1,0.3);
+                grid.visible = true;
             }
 
-            return new THREE.BoxGeometry(0.3,1,2);
+            else {
 
-        case "roof":
-            return new THREE.ConeGeometry(1,1,4);
+                ground.visible = false;
 
-        case "window":
-            return new THREE.BoxGeometry(1.2,1.2,0.1);
-
-        case "door":
-            return new THREE.BoxGeometry(1,2,0.2);
-
-        default:
-            return new THREE.BoxGeometry(1,1,1);
-    }
-}
-
-function getMaterial(type) {
-
-    switch (type) {
-
-        case "cube":
-            return materials.cube;
-
-        case "wall":
-            return Math.random() > 0.5
-                ? materials.wallX
-                : materials.wallZ;
-
-        case "roof":
-            return materials.roof;
-
-        case "window":
-            return materials.glass;
-
-        case "door":
-            return materials.door;
-
-        default:
-            return materials.cube;
-    }
-}
+                grid.visible = false;
+            }
 
 
 
 
 
-/* =========================================================
-   FIREBASE SYNC
-========================================================= */
+            if (currentRole === "directors") {
 
-const buildsRef = ref(db, "builds");
+                directorsUI.classList.remove(
+                    "hidden"
+                );
+            }
 
-onValue(buildsRef, snapshot => {
+            if (currentRole === "finance") {
 
-    const data = snapshot.val() || {};
+                financeUI.classList.remove(
+                    "hidden"
+                );
+            }
 
+            if (currentRole === "pr") {
 
-
-
-
-    Object.values(objects).forEach(mesh => {
-
-        scene.remove(mesh);
-    });
-
-    Object.keys(objects).forEach(k => {
-
-        delete objects[k];
+                prUI.classList.remove(
+                    "hidden"
+                );
+            }
+        });
     });
 
 
 
 
 
-    Object.entries(data).forEach(([id, item]) => {
+/* ======================================================
+   BUILD BUTTONS
+====================================================== */
 
-        const mesh = new THREE.Mesh(
+document
+    .querySelectorAll(".build-btn")
+    .forEach(btn => {
 
-            createGeometry(item.type),
+        btn.addEventListener("click", () => {
 
-            getMaterial(item.type)
-        );
+            currentType =
+                btn.dataset.type;
 
-        mesh.position.set(
+            document
+                .querySelectorAll(".build-btn")
+                .forEach(b =>
+                    b.classList.remove("active-build")
+                );
 
-            item.x,
-
-            item.y,
-
-            item.z
-        );
-
-        mesh.castShadow = true;
-
-        mesh.receiveShadow = true;
-
-        scene.add(mesh);
-
-        objects[id] = mesh;
+            btn.classList.add("active-build");
+        });
     });
-});
 
 
 
 
 
-/* =========================================================
-   BUILD SYSTEM
-========================================================= */
+/* ======================================================
+   RAYCAST
+====================================================== */
 
 const raycaster = new THREE.Raycaster();
 
 const mouse = new THREE.Vector2();
 
-window.addEventListener("mousedown", onMouseDown);
-
-async function onMouseDown(event) {
-
-    if (state.role !== "workers") return;
 
 
 
 
+/* ======================================================
+   BUILD
+====================================================== */
 
-    mouse.x = (
+window.addEventListener(
+    "pointerdown",
+    e => {
 
-        event.clientX / window.innerWidth
-    ) * 2 - 1;
+        if (currentRole !== "workers") return;
 
-    mouse.y = -(
-        event.clientY / window.innerHeight
-    ) * 2 + 1;
+        if (e.target.closest(".left-panel")) return;
 
-
-
-
-
-    raycaster.setFromCamera(mouse, camera);
+        if (e.target.closest(".bottom-toolbar")) return;
 
 
 
 
 
-    const meshes = [
+        mouse.x =
+            (e.clientX / window.innerWidth) * 2 - 1;
 
-        ground,
+        mouse.y =
+            -(e.clientY / window.innerHeight) * 2 + 1;
 
-        ...Object.values(objects)
-    ];
+        raycaster.setFromCamera(
+            mouse,
+            camera
+        );
 
-    const intersects = raycaster.intersectObjects(meshes);
+        const intersects =
+            raycaster.intersectObject(ground);
 
-    if (!intersects.length) return;
+        if (!intersects.length) return;
 
+        const p = intersects[0].point;
 
+        const x = Math.round(p.x);
 
+        const z = Math.round(p.z);
 
+        if (e.button === 0) {
 
-    const hit = intersects[0];
+            addBlock(x, z);
+        }
 
+        if (e.button === 2) {
 
-
-
-
-    /* REMOVE */
-
-    if (event.button === 2) {
-
-        for (const [id, mesh] of Object.entries(objects)) {
-
-            if (mesh === hit.object) {
-
-                await remove(ref(db, `builds/${id}`));
-
-                return;
-            }
+            removeBlock(x, z);
         }
     }
+);
 
 
 
 
 
-    /* BUILD */
-
-    let x, y, z;
-
-
-
-
-
-    if (hit.object === ground) {
-
-        x = Math.round(hit.point.x);
-
-        y = 0.5;
-
-        z = Math.round(hit.point.z);
-    }
-
-    else {
-
-        x = Math.round(hit.object.position.x);
-
-        y = hit.object.position.y + 1;
-
-        z = Math.round(hit.object.position.z);
-    }
+window.addEventListener(
+    "contextmenu",
+    e => e.preventDefault()
+);
 
 
 
 
 
-    const id = crypto.randomUUID();
+/* ======================================================
+   CREATE BLOCK
+====================================================== */
 
-    await set(ref(db, `builds/${id}`), {
+function addBlock(x, z) {
 
-        type: state.currentType,
-
-        x,
-
-        y,
-
-        z
-    });
+    push(
+        ref(db, "world"),
+        {
+            x,
+            z,
+            type: currentType
+        }
+    );
 }
 
-window.addEventListener("contextmenu", e => {
-
-    e.preventDefault();
-});
 
 
 
 
+function removeBlock(x, z) {
 
-/* =========================================================
-   RESET
-========================================================= */
+    const worldRef = ref(db, "world");
 
-resetBtn.addEventListener("click", async () => {
+    onValue(
+        worldRef,
+        snapshot => {
 
-    const ok = confirm(
+            snapshot.forEach(child => {
 
-        "Сбросить весь мир?"
+                const data = child.val();
+
+                if (
+                    data.x === x &&
+                    data.z === z
+                ) {
+
+                    remove(
+                        ref(
+                            db,
+                            "world/" + child.key
+                        )
+                    );
+                }
+            });
+        },
+        {
+            onlyOnce: true
+        }
+    );
+}
+
+
+
+
+
+/* ======================================================
+   RENDER BLOCKS
+====================================================== */
+
+onValue(
+    ref(db, "world"),
+    snapshot => {
+
+        Object.values(placedMeshes)
+            .forEach(mesh => {
+
+                scene.remove(mesh);
+            });
+
+        for (const k in placedMeshes) {
+
+            delete placedMeshes[k];
+        }
+
+
+
+
+
+        snapshot.forEach(child => {
+
+            const data = child.val();
+
+            const mesh =
+                createMesh(data);
+
+            placedMeshes[
+                child.key
+            ] = mesh;
+
+            scene.add(mesh);
+        });
+    }
+);
+
+
+
+
+
+function createMesh(data) {
+
+    let geo;
+
+    let mat;
+
+
+
+
+
+    if (data.type === "cube") {
+
+        geo =
+            new THREE.BoxGeometry(
+                1,
+                1,
+                1
+            );
+
+        mat = materials.cube;
+    }
+
+
+
+
+
+    if (data.type === "wall") {
+
+        const rotate =
+            Math.random() > 0.5;
+
+        geo =
+            rotate
+                ? new THREE.BoxGeometry(
+                    3,
+                    2,
+                    0.3
+                )
+                : new THREE.BoxGeometry(
+                    0.3,
+                    2,
+                    3
+                );
+
+        mat =
+            rotate
+                ? materials.wallX
+                : materials.wallZ;
+    }
+
+
+
+
+
+    if (data.type === "roof") {
+
+        geo =
+            new THREE.ConeGeometry(
+                1.4,
+                1.5,
+                4
+            );
+
+        mat = materials.roof;
+    }
+
+
+
+
+
+    if (data.type === "window") {
+
+        geo =
+            new THREE.BoxGeometry(
+                1.4,
+                1.2,
+                0.1
+            );
+
+        mat = materials.window;
+    }
+
+
+
+
+
+    if (data.type === "door") {
+
+        geo =
+            new THREE.BoxGeometry(
+                1,
+                2,
+                0.2
+            );
+
+        mat = materials.door;
+    }
+
+
+
+
+
+    const mesh =
+        new THREE.Mesh(geo, mat);
+
+    mesh.position.set(
+        data.x,
+        0.5,
+        data.z
     );
 
-    if (!ok) return;
+    mesh.castShadow = true;
 
-    await remove(ref(db, "builds"));
-});
+    mesh.receiveShadow = true;
 
-
-
-
-
-/* =========================================================
-   MONEY
-========================================================= */
-
-const addMoneyBtn =
-    document.getElementById("add-money-btn");
-
-const removeMoneyBtn =
-    document.getElementById("remove-money-btn");
-
-function updateMoneyUI() {
-
-    moneyValue.innerText =
-        state.money.toLocaleString("ru-RU") + " ₽";
+    return mesh;
 }
 
-addMoneyBtn?.addEventListener("click", () => {
-
-    state.money += 10000;
-
-    updateMoneyUI();
-});
-
-removeMoneyBtn?.addEventListener("click", () => {
-
-    state.money -= 10000;
-
-    updateMoneyUI();
-});
 
 
 
 
+/* ======================================================
+   RESET WORLD
+====================================================== */
 
-/* =========================================================
+document
+    .getElementById("reset-world-btn")
+    .addEventListener("click", () => {
+
+        if (
+            confirm(
+                "Сбросить весь мир?"
+            )
+        ) {
+
+            set(
+                ref(db, "world"),
+                null
+            );
+        }
+    });
+
+
+
+
+
+/* ======================================================
    PR DRAW
-========================================================= */
+====================================================== */
 
-const canvas = document.getElementById("pr-canvas");
+const canvas =
+    document.getElementById("pr-canvas");
 
 if (canvas) {
 
-    const ctx = canvas.getContext("2d");
+    const ctx =
+        canvas.getContext("2d");
 
     let drawing = false;
 
+    canvas.addEventListener(
+        "pointerdown",
+        () => drawing = true
+    );
 
+    canvas.addEventListener(
+        "pointerup",
+        () => {
 
+            drawing = false;
 
+            ctx.beginPath();
+        }
+    );
 
-    canvas.addEventListener("mousedown", () => {
+    canvas.addEventListener(
+        "pointermove",
+        e => {
 
-        drawing = true;
-    });
+            if (!drawing) return;
 
-    canvas.addEventListener("mouseup", () => {
+            const rect =
+                canvas.getBoundingClientRect();
 
-        drawing = false;
+            const x =
+                e.clientX - rect.left;
 
-        ctx.beginPath();
-    });
+            const y =
+                e.clientY - rect.top;
 
-    canvas.addEventListener("mousemove", e => {
+            ctx.lineWidth = 3;
 
-        if (!drawing) return;
+            ctx.lineCap = "round";
 
-        const rect = canvas.getBoundingClientRect();
+            ctx.strokeStyle = "#111";
 
-        ctx.lineWidth = 3;
+            ctx.lineTo(x, y);
 
-        ctx.lineCap = "round";
+            ctx.stroke();
 
-        ctx.strokeStyle = "#38bdf8";
+            ctx.beginPath();
 
-        ctx.lineTo(
-
-            e.clientX - rect.left,
-
-            e.clientY - rect.top
-        );
-
-        ctx.stroke();
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-
-            e.clientX - rect.left,
-
-            e.clientY - rect.top
-        );
-    });
+            ctx.moveTo(x, y);
+        }
+    );
 }
 
 
 
 
 
-/* =========================================================
+/* ======================================================
    RESIZE
-========================================================= */
+====================================================== */
 
-window.addEventListener("resize", () => {
+window.addEventListener(
+    "resize",
+    () => {
 
-    camera.aspect =
-        window.innerWidth / window.innerHeight;
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
 
-    camera.updateProjectionMatrix();
+        camera.updateProjectionMatrix();
 
-    renderer.setSize(
-
-        window.innerWidth,
-
-        window.innerHeight
-    );
-});
-
-
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+    }
+);
 
 
 
-/* =========================================================
+
+
+/* ======================================================
    LOOP
-========================================================= */
+====================================================== */
 
 function animate() {
 
@@ -895,4 +849,3 @@ function animate() {
 }
 
 animate();
-```
