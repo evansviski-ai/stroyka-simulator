@@ -74,7 +74,6 @@ const controls = new OrbitControls(
 );
 
 controls.enableDamping = true;
-controls.dampingFactor = 0.08;
 
 controls.target.set(0, 0, 0);
 
@@ -88,7 +87,7 @@ controls.target.set(0, 0, 0);
 
 const ambient = new THREE.AmbientLight(
     0xffffff,
-    1.1
+    1.2
 );
 
 scene.add(ambient);
@@ -97,16 +96,14 @@ scene.add(ambient);
 
 
 
-const dir = new THREE.DirectionalLight(
+const dirLight = new THREE.DirectionalLight(
     0xffffff,
     2
 );
 
-dir.position.set(20, 40, 20);
+dirLight.position.set(20, 40, 20);
 
-dir.castShadow = true;
-
-scene.add(dir);
+scene.add(dirLight);
 
 
 
@@ -134,6 +131,7 @@ scene.add(grid);
 ========================================================= */
 
 const materials = {
+
     cube: new THREE.MeshStandardMaterial({
         color: 0xcbd5e1
     }),
@@ -171,21 +169,23 @@ const materials = {
    MAP
 ========================================================= */
 
-function createHill(x, z, size) {
+function createHill(x, z, count) {
 
-    for (let i = 0; i < size; i++) {
+    for (let i = 0; i < count; i++) {
 
-        const geo = new THREE.BoxGeometry(2, 1, 2);
+        const geo =
+            new THREE.BoxGeometry(2, 1, 2);
 
-        const mesh = new THREE.Mesh(
-            geo,
-            materials.hill
-        );
+        const mesh =
+            new THREE.Mesh(
+                geo,
+                materials.hill
+            );
 
         mesh.position.set(
-            x + Math.random() * 4,
+            x + Math.random() * 6,
             i * 0.5,
-            z + Math.random() * 4
+            z + Math.random() * 6
         );
 
         scene.add(mesh);
@@ -202,12 +202,14 @@ function createMountain(x, z, height) {
 
         for (let i = 0; i < height - y; i++) {
 
-            const geo = new THREE.BoxGeometry(2, 2, 2);
+            const geo =
+                new THREE.BoxGeometry(2, 2, 2);
 
-            const mesh = new THREE.Mesh(
-                geo,
-                materials.mountain
-            );
+            const mesh =
+                new THREE.Mesh(
+                    geo,
+                    materials.mountain
+                );
 
             mesh.position.set(
                 x + i * 2,
@@ -225,6 +227,7 @@ function createMountain(x, z, height) {
 
 
 createHill(-15, -15, 8);
+
 createHill(20, -10, 10);
 
 createMountain(-25, 10, 6);
@@ -266,18 +269,24 @@ function saveWorld() {
 
 function loadWorld() {
 
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw =
+        localStorage.getItem(STORAGE_KEY);
 
     if (!raw) return;
 
     const data = JSON.parse(raw);
 
-    state.money = data.money || 100000;
+    state.money =
+        data.money || 100000;
 
-    document.getElementById("money-value").innerText =
-        `${state.money.toLocaleString()} ₽`;
+    updateMoney();
 
-    data.objects.forEach(addObjectFromData);
+    if (data.objects) {
+
+        data.objects.forEach(
+            addObjectFromData
+        );
+    }
 }
 
 
@@ -285,7 +294,22 @@ function loadWorld() {
 
 
 /* =========================================================
-   BUILDING
+   MONEY
+========================================================= */
+
+function updateMoney() {
+
+    document.getElementById("money-value")
+        .innerText =
+        `${state.money.toLocaleString()} ₽`;
+}
+
+
+
+
+
+/* =========================================================
+   BUILD
 ========================================================= */
 
 function createMesh(type) {
@@ -293,24 +317,33 @@ function createMesh(type) {
     let geo;
 
     if (type === "wall-x") {
-        geo = new THREE.BoxGeometry(4, 2, 1);
+
+        geo =
+            new THREE.BoxGeometry(4, 2, 1);
     }
 
     else if (type === "wall-z") {
-        geo = new THREE.BoxGeometry(1, 2, 4);
+
+        geo =
+            new THREE.BoxGeometry(1, 2, 4);
     }
 
     else if (type === "roof") {
-        geo = new THREE.BoxGeometry(2, 0.5, 2);
+
+        geo =
+            new THREE.BoxGeometry(2, 0.5, 2);
     }
 
     else {
-        geo = new THREE.BoxGeometry(2, 2, 2);
+
+        geo =
+            new THREE.BoxGeometry(2, 2, 2);
     }
 
     const mat =
-        materials[type.replace("-x", "").replace("-z", "")]
-        || materials.cube;
+        materials[
+            type.replace("-x", "").replace("-z", "")
+        ] || materials.cube;
 
     return new THREE.Mesh(geo, mat);
 }
@@ -321,7 +354,8 @@ function createMesh(type) {
 
 function addObjectFromData(data) {
 
-    const mesh = createMesh(data.type);
+    const mesh =
+        createMesh(data.type);
 
     mesh.position.set(
         data.x,
@@ -344,12 +378,14 @@ function placeObject(position) {
 
     if (type === "wall") {
 
-        type = Math.random() > 0.5
-            ? "wall-x"
-            : "wall-z";
+        type =
+            Math.random() > 0.5
+                ? "wall-x"
+                : "wall-z";
     }
 
-    const mesh = createMesh(type);
+    const mesh =
+        createMesh(type);
 
     mesh.position.copy(position);
 
@@ -358,7 +394,7 @@ function placeObject(position) {
     scene.add(mesh);
 
     state.objects.push({
-        type,
+        type: type,
         x: position.x,
         y: position.y,
         z: position.z
@@ -389,19 +425,20 @@ renderer.domElement.addEventListener(
 
         raycaster.setFromCamera(mouse, camera);
 
-        const intersects = raycaster.intersectObjects(
-            scene.children
-        );
+        const intersects =
+            raycaster.intersectObjects(scene.children);
 
         if (!intersects.length) return;
 
-        const point = intersects[0].point;
+        const point =
+            intersects[0].point;
 
-        const snapped = new THREE.Vector3(
-            Math.round(point.x / 2) * 2,
-            1,
-            Math.round(point.z / 2) * 2
-        );
+        const snapped =
+            new THREE.Vector3(
+                Math.round(point.x / 2) * 2,
+                1,
+                Math.round(point.z / 2) * 2
+            );
 
         if (event.button === 0) {
 
@@ -410,22 +447,24 @@ renderer.domElement.addEventListener(
 
         if (event.button === 2) {
 
-            const obj = intersects[0].object;
+            const obj =
+                intersects[0].object;
 
             if (!obj.userData.placed) return;
 
             scene.remove(obj);
 
-            state.objects = state.objects.filter(
-                item =>
-                    !(
-                        item.x === obj.position.x
-                        &&
-                        item.y === obj.position.y
-                        &&
-                        item.z === obj.position.z
-                    )
-            );
+            state.objects =
+                state.objects.filter(
+                    item =>
+                        !(
+                            item.x === obj.position.x
+                            &&
+                            item.y === obj.position.y
+                            &&
+                            item.z === obj.position.z
+                        )
+                );
 
             saveWorld();
         }
@@ -503,18 +542,22 @@ function enterRole(role) {
     hideAllScreens();
 
     if (role === "workers") {
+
         buildToolbar.classList.remove("hidden");
     }
 
     if (role === "directors") {
+
         directorsUI.classList.remove("hidden");
     }
 
     if (role === "finance") {
+
         financeUI.classList.remove("hidden");
     }
 
     if (role === "pr") {
+
         prUI.classList.remove("hidden");
     }
 }
@@ -526,6 +569,7 @@ function enterRole(role) {
 enterRoleBtn.addEventListener(
     "click",
     () => {
+
         enterRole(roleSelect.value);
     }
 );
@@ -534,11 +578,11 @@ enterRoleBtn.addEventListener(
 
 
 
-document.getElementById(
-    "change-role-btn"
-).addEventListener(
+document.getElementById("change-role-btn")
+.addEventListener(
     "click",
     () => {
+
         roleSelectScreen.classList.remove("hidden");
     }
 );
@@ -556,7 +600,9 @@ document.querySelectorAll(".build-btn")
 
             document
                 .querySelectorAll(".build-btn")
-                .forEach(b => b.classList.remove("active-build"));
+                .forEach(b =>
+                    b.classList.remove("active-build")
+                );
 
             btn.classList.add("active-build");
 
@@ -570,17 +616,14 @@ document.querySelectorAll(".build-btn")
 
 
 
-document.getElementById(
-    "add-money-btn"
-).addEventListener(
+document.getElementById("add-money-btn")
+.addEventListener(
     "click",
     () => {
 
         state.money += 10000;
 
-        document.getElementById("money-value")
-            .innerText =
-            `${state.money.toLocaleString()} ₽`;
+        updateMoney();
 
         saveWorld();
     }
@@ -590,17 +633,14 @@ document.getElementById(
 
 
 
-document.getElementById(
-    "remove-money-btn"
-).addEventListener(
+document.getElementById("remove-money-btn")
+.addEventListener(
     "click",
     () => {
 
         state.money -= 10000;
 
-        document.getElementById("money-value")
-            .innerText =
-            `${state.money.toLocaleString()} ₽`;
+        updateMoney();
 
         saveWorld();
     }
@@ -610,9 +650,8 @@ document.getElementById(
 
 
 
-document.getElementById(
-    "reset-world-btn"
-).addEventListener(
+document.getElementById("reset-world-btn")
+.addEventListener(
     "click",
     () => {
 
@@ -637,7 +676,13 @@ const ctx =
     canvas.getContext("2d");
 
 ctx.fillStyle = "white";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+ctx.fillRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+);
 
 let drawing = false;
 
@@ -670,7 +715,13 @@ canvas.addEventListener(
 
         ctx.beginPath();
 
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.arc(
+            x,
+            y,
+            4,
+            0,
+            Math.PI * 2
+        );
 
         ctx.fill();
     }
@@ -718,6 +769,8 @@ function animate() {
 }
 
 animate();
+
+updateMoney();
 
 loadWorld();
 ```
