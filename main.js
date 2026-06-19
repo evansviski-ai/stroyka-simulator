@@ -773,4 +773,3 @@ animate();
 updateMoney();
 
 loadWorld();
-```
