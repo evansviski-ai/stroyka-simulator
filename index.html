@@ -11,283 +11,14 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Стройка Simulator</title>
-
-
-
-
-
-    <style>
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-
-            width: 100%;
-            height: 100%;
-
-            overflow: hidden;
-
-            font-family: Inter, Arial, sans-serif;
-
-            background: #081225;
-
-            color: white;
-        }
-
-        canvas {
-            display: block;
-        }
-
-
-
-
-
-        /* ---------------- HUD ---------------- */
-
-        .hud {
-
-            position: fixed;
-
-            top: 12px;
-            left: 12px;
-            right: 12px;
-
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            z-index: 100;
-        }
-
-        .hud-card {
-
-            background: rgba(12, 20, 35, 0.88);
-
-            backdrop-filter: blur(10px);
-
-            border: 1px solid rgba(255,255,255,0.08);
-
-            border-radius: 16px;
-
-            padding: 12px 16px;
-
-            min-width: 180px;
-
-            box-shadow:
-                0 6px 18px rgba(0,0,0,0.35);
-        }
-
-        .hud-title {
-
-            font-size: 12px;
-
-            opacity: 0.7;
-
-            margin-bottom: 4px;
-
-            text-transform: uppercase;
-
-            letter-spacing: 1px;
-        }
-
-        .hud-value {
-
-            font-size: 22px;
-
-            font-weight: 700;
-        }
-
-
-
-
-
-        /* ---------------- SIDEBAR ---------------- */
-
-        .sidebar {
-
-            position: fixed;
-
-            top: 90px;
-            left: 12px;
-
-            width: 320px;
-
-            max-height: calc(100vh - 110px);
-
-            overflow-y: auto;
-
-            background: rgba(10, 16, 30, 0.92);
-
-            backdrop-filter: blur(12px);
-
-            border-radius: 22px;
-
-            padding: 18px;
-
-            z-index: 100;
-
-            border: 1px solid rgba(255,255,255,0.08);
-
-            box-shadow:
-                0 10px 24px rgba(0,0,0,0.4);
-        }
-
-        .sidebar h2 {
-
-            margin-bottom: 14px;
-
-            font-size: 18px;
-        }
-
-        .section {
-
-            margin-bottom: 24px;
-        }
-
-
-
-
-
-        /* ---------------- BUTTONS ---------------- */
-
-        button {
-
-            width: 100%;
-
-            border: none;
-
-            border-radius: 14px;
-
-            padding: 14px;
-
-            margin-bottom: 10px;
-
-            background: #1e293b;
-
-            color: white;
-
-            font-size: 15px;
-
-            cursor: pointer;
-
-            transition: 0.2s;
-        }
-
-        button:hover {
-
-            transform: translateY(-2px);
-
-            background: #334155;
-        }
-
-        .active-role {
-
-            background: #2563eb;
-        }
-
-        .active-build {
-
-            background: #dc2626;
-        }
-
-        .danger {
-
-            background: #991b1b;
-        }
-
-        .danger:hover {
-
-            background: #b91c1c;
-        }
-
-
-
-
-
-        /* ---------------- BUILD GRID ---------------- */
-
-        .build-grid {
-
-            display: grid;
-
-            grid-template-columns: 1fr 1fr;
-
-            gap: 10px;
-        }
-
-
-
-
-
-        /* ---------------- HELP ---------------- */
-
-        .help {
-
-            font-size: 13px;
-
-            line-height: 1.5;
-
-            opacity: 0.75;
-        }
-
-
-
-
-
-        /* ---------------- MOBILE ---------------- */
-
-        @media (max-width: 768px) {
-
-            .sidebar {
-
-                width: calc(100vw - 24px);
-
-                top: auto;
-
-                bottom: 12px;
-
-                left: 12px;
-
-                max-height: 45vh;
-            }
-
-            .hud {
-
-                flex-direction: column;
-
-                align-items: stretch;
-
-                gap: 10px;
-            }
-
-            .hud-card {
-
-                min-width: auto;
-            }
-
-            button {
-
-                padding: 16px;
-
-                font-size: 16px;
-            }
-        }
-
-    </style>
+    <title>Stroyka Business Simulator</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 
 </head>
-
-
-
-
 
 <body>
 
@@ -295,21 +26,18 @@
 
 
 
-    <!-- ---------------- HUD ---------------- -->
+    <!-- TOP HUD -->
 
-    <div class="hud">
+    <div class="topbar">
 
-        <div class="hud-card">
+        <div class="logo-card">
 
-            <div class="hud-title">
-                Бюджет проекта
+            <div class="logo-title">
+                STROYKA
             </div>
 
-            <div
-                class="hud-value"
-                id="money-value"
-            >
-                100 000 ₽
+            <div class="logo-subtitle">
+                BUSINESS SIMULATOR
             </div>
 
         </div>
@@ -318,207 +46,39 @@
 
 
 
-        <div class="hud-card">
+        <div class="hud-group">
 
-            <div class="hud-title">
-                Текущая роль
-            </div>
+            <div class="hud-card">
 
-            <div
-                class="hud-value"
-                id="role-value"
-            >
-                Не выбрана
-            </div>
+                <div class="hud-label">
+                    БЮДЖЕТ
+                </div>
 
-        </div>
-
-    </div>
-
-
-
-
-
-    <!-- ---------------- SIDEBAR ---------------- -->
-
-    <div class="sidebar">
-
-
-
-
-        <!-- ROLES -->
-
-        <div class="section">
-
-            <h2>
-                Роли
-            </h2>
-
-            <button
-                class="role-btn"
-                data-role="directors"
-            >
-                Совет директоров
-            </button>
-
-            <button
-                class="role-btn"
-                data-role="finance"
-            >
-                Финансовый отдел
-            </button>
-
-            <button
-                class="role-btn"
-                data-role="workers"
-            >
-                Бригада рабочих
-            </button>
-
-            <button
-                class="role-btn"
-                data-role="architects"
-            >
-                Архитектурное бюро
-            </button>
-
-            <button
-                class="role-btn"
-                data-role="engineers"
-            >
-                Инженерный отдел
-            </button>
-
-            <button
-                class="role-btn"
-                data-role="pr"
-            >
-                PR
-            </button>
-
-            <button
-                class="role-btn"
-                data-role="sales"
-            >
-                Продажи
-            </button>
-
-            <button
-                class="role-btn"
-                data-role="housing"
-            >
-                ЖКХ
-            </button>
-
-            <button
-                class="role-btn"
-                data-role="hr"
-            >
-                HR
-            </button>
-
-        </div>
-
-
-
-
-
-        <!-- BUILD -->
-
-        <div class="section">
-
-            <h2>
-                Строительство
-            </h2>
-
-            <div class="build-grid">
-
-                <button
-                    class="build-btn active-build"
-                    data-type="cube"
+                <div
+                    class="hud-value"
+                    id="money-value"
                 >
-                    Куб
-                </button>
-
-                <button
-                    class="build-btn"
-                    data-type="wall"
-                >
-                    Стена
-                </button>
-
-                <button
-                    class="build-btn"
-                    data-type="roof"
-                >
-                    Крыша
-                </button>
-
-                <button
-                    class="build-btn"
-                    data-type="window"
-                >
-                    Окно
-                </button>
-
-                <button
-                    class="build-btn"
-                    data-type="door"
-                >
-                    Дверь
-                </button>
+                    100 000 ₽
+                </div>
 
             </div>
 
-        </div>
 
 
 
 
+            <div class="hud-card">
 
-        <!-- FINANCE -->
+                <div class="hud-label">
+                    РОЛЬ
+                </div>
 
-        <div class="section">
-
-            <h2>
-                Финансы
-            </h2>
-
-            <button id="add-money-btn">
-                +10 000 ₽
-            </button>
-
-            <button
-                class="danger"
-                id="remove-money-btn"
-            >
-                −10 000 ₽
-            </button>
-
-        </div>
-
-
-
-
-
-        <!-- HELP -->
-
-        <div class="section">
-
-            <h2>
-                Управление
-            </h2>
-
-            <div class="help">
-
-                ЛКМ — поставить объект<br>
-                ПКМ — снести объект<br><br>
-
-                WASD — движение камеры<br>
-                Колесо мыши — зум<br><br>
-
-                Mobile:<br>
-                свайп — перемещение камеры
+                <div
+                    class="hud-value"
+                    id="role-value"
+                >
+                    НЕ ВЫБРАНА
+                </div>
 
             </div>
 
@@ -530,16 +90,197 @@
 
 
 
-    <!-- ---------------- MAIN ---------------- -->
+    <!-- LEFT PANEL -->
+
+    <div class="left-panel">
+
+        <div class="panel-title">
+            РОЛИ
+        </div>
+
+
+
+
+
+        <button
+            class="role-btn"
+            data-role="directors"
+        >
+            Совет директоров
+        </button>
+
+        <button
+            class="role-btn"
+            data-role="finance"
+        >
+            Финансы
+        </button>
+
+        <button
+            class="role-btn"
+            data-role="workers"
+        >
+            Рабочие
+        </button>
+
+        <button
+            class="role-btn"
+            data-role="architects"
+        >
+            Архитекторы
+        </button>
+
+        <button
+            class="role-btn"
+            data-role="engineers"
+        >
+            Инженеры
+        </button>
+
+        <button
+            class="role-btn"
+            data-role="housing"
+        >
+            ЖКХ
+        </button>
+
+        <button
+            class="role-btn"
+            data-role="sales"
+        >
+            Продажи
+        </button>
+
+        <button
+            class="role-btn"
+            data-role="pr"
+        >
+            PR
+        </button>
+
+        <button
+            class="role-btn"
+            data-role="hr"
+        >
+            HR
+        </button>
+
+
+
+
+
+        <div class="panel-divider"></div>
+
+
+
+
+
+        <button
+            id="reset-world-btn"
+            class="danger-btn"
+        >
+            СБРОСИТЬ ИГРУ
+        </button>
+
+    </div>
+
+
+
+
+
+    <!-- BUILD PANEL -->
+
+    <div
+        class="bottom-toolbar"
+        id="build-toolbar"
+    >
+
+        <button
+            class="build-btn active-build"
+            data-type="cube"
+        >
+            Куб
+        </button>
+
+        <button
+            class="build-btn"
+            data-type="wall"
+        >
+            Стена
+        </button>
+
+        <button
+            class="build-btn"
+            data-type="roof"
+        >
+            Крыша
+        </button>
+
+        <button
+            class="build-btn"
+            data-type="window"
+        >
+            Окно
+        </button>
+
+        <button
+            class="build-btn"
+            data-type="door"
+        >
+            Дверь
+        </button>
+
+    </div>
+
+
+
+
+
+    <!-- FINANCE PANEL -->
+
+    <div
+        class="finance-panel hidden"
+        id="finance-panel"
+    >
+
+        <div class="panel-title">
+            ФИНАНСЫ
+        </div>
+
+        <button id="add-money-btn">
+            +10 000 ₽
+        </button>
+
+        <button id="remove-money-btn">
+            −10 000 ₽
+        </button>
+
+    </div>
+
+
+
+
+
+    <!-- INFO -->
+
+    <div class="help-card">
+
+        ЛКМ — строить<br>
+        ПКМ — снести<br><br>
+
+        WASD — камера<br>
+        Колесо — зум
+
+    </div>
+
+
+
+
 
     <script
         type="module"
         src="main.js"
     ></script>
-
-
-
-
 
 </body>
 
