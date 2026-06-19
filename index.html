@@ -11,13 +11,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>
-        STROYKA BS
-    </title>
-
-
-
-
+    <title>STROYKA BS</title>
 
     <link
         rel="stylesheet"
@@ -32,10 +26,10 @@
 
 
 
-    <!-- ROLE SELECT SCREEN -->
+    <!-- ROLE SELECT -->
 
     <div
-        id="role-screen"
+        id="role-select-screen"
         class="role-screen-start"
     >
 
@@ -44,10 +38,6 @@
             <h1>
                 STROYKA BS
             </h1>
-
-
-
-
 
             <p>
                 Выберите роль
@@ -71,28 +61,8 @@
                     Финансы
                 </option>
 
-                <option value="architects">
-                    Архитекторы
-                </option>
-
-                <option value="engineers">
-                    Инженеры
-                </option>
-
-                <option value="housing">
-                    ЖКХ
-                </option>
-
-                <option value="sales">
-                    Продажи
-                </option>
-
                 <option value="pr">
                     PR
-                </option>
-
-                <option value="hr">
-                    HR
                 </option>
 
             </select>
@@ -101,7 +71,7 @@
 
 
 
-            <button id="enter-btn">
+            <button id="enter-role-btn">
                 ВОЙТИ
             </button>
 
@@ -115,7 +85,7 @@
 
     <!-- TOPBAR -->
 
-    <div class="topbar hidden">
+    <div class="topbar">
 
         <div class="logo">
             STROYKA BS
@@ -131,7 +101,7 @@
 
                 БЮДЖЕТ:
                 <span id="money-value">
-                    100000 ₽
+                    100 000 ₽
                 </span>
 
             </div>
@@ -144,7 +114,7 @@
 
                 РОЛЬ:
                 <span id="role-value">
-                    ---
+                    НЕ ВЫБРАНА
                 </span>
 
             </div>
@@ -159,10 +129,15 @@
 
     <!-- LEFT PANEL -->
 
-    <div
-        class="left-panel hidden"
-        id="left-panel"
-    >
+    <div class="left-panel">
+
+        <div class="panel-title">
+            УПРАВЛЕНИЕ
+        </div>
+
+
+
+
 
         <button id="change-role-btn">
             СМЕНИТЬ РОЛЬ
@@ -173,7 +148,7 @@
 
 
         <button id="reset-world-btn">
-            СБРОСИТЬ МИР
+            СБРОСИТЬ ИГРУ
         </button>
 
 
@@ -181,17 +156,9 @@
 
 
         <div
-            id="workers-tools"
+            id="build-toolbar"
             class="hidden"
         >
-
-            <div class="panel-title">
-                СТРОИТЕЛЬСТВО
-            </div>
-
-
-
-
 
             <button
                 class="build-btn active-build"
@@ -206,20 +173,9 @@
 
             <button
                 class="build-btn"
-                data-type="wallX"
+                data-type="wall"
             >
-                Стена X
-            </button>
-
-
-
-
-
-            <button
-                class="build-btn"
-                data-type="wallZ"
-            >
-                Стена Z
+                Стена
             </button>
 
 
@@ -280,15 +236,13 @@
 
 
 
-            <textarea id="director-text">
+            <textarea id="director-notes">
 
-Построить:
+Построить жилой квартал:
 - 3 дома
-- парковку
-- зону отдыха
-
-Бюджет:
-100 000 ₽
+- парковка
+- зона отдыха
+- бюджет: 100 000 ₽
 
             </textarea>
 
@@ -348,7 +302,7 @@
             <div class="finance-buttons">
 
                 <button id="add-money-btn">
-                    +10000 ₽
+                    +10 000 ₽
                 </button>
 
 
@@ -356,7 +310,7 @@
 
 
                 <button id="remove-money-btn">
-                    -10000 ₽
+                    −10 000 ₽
                 </button>
 
             </div>
@@ -381,7 +335,7 @@
             <div>
 
                 <h2>
-                    PR доска
+                    PR-доска
                 </h2>
 
 
@@ -390,7 +344,7 @@
 
                 <canvas
                     id="pr-canvas"
-                    width="600"
+                    width="500"
                     height="400"
                 ></canvas>
 
@@ -403,7 +357,7 @@
             <div>
 
                 <h2>
-                    PR текст
+                    PR-кампания
                 </h2>
 
 
@@ -412,7 +366,10 @@
 
                 <textarea id="pr-text">
 
-Жилой квартал нового поколения
+Жилой квартал будущего.
+Комфорт.
+Экология.
+Безопасность.
 
                 </textarea>
 
@@ -421,43 +378,6 @@
         </div>
 
     </div>
-
-
-
-
-
-    <!-- FIREBASE -->
-
-    <script type="module">
-
-        import { initializeApp }
-        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-        import {
-            getDatabase,
-            ref,
-            push,
-            onValue,
-            remove,
-            set
-        }
-        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-
-
-
-
-        window.FirebaseModules = {
-            initializeApp,
-            getDatabase,
-            ref,
-            push,
-            onValue,
-            remove,
-            set
-        };
-
-    </script>
 
 
 
