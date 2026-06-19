@@ -1,20 +1,16 @@
-```js id="n9v4qs"
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
 
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js";
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
     getDatabase,
     ref,
-    push,
-    onChildAdded,
-    onChildRemoved,
     set,
-    get,
-    remove
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    push,
+    remove,
+    onValue
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
 
@@ -23,43 +19,61 @@ import {
 /* ---------------- FIREBASE ---------------- */
 
 const firebaseConfig = {
+
     apiKey: "AIzaSyCDoON8VQKnb9Eh4UtogG_aqn9P4bMlL4A",
+
     authDomain: "stroyka-bs.firebaseapp.com",
-    databaseURL: "https://stroyka-bs-default-rtdb.europe-west1.firebasedatabase.app",
+
+    databaseURL:
+        "https://stroyka-bs-default-rtdb.europe-west1.firebasedatabase.app",
+
     projectId: "stroyka-bs",
+
     storageBucket: "stroyka-bs.firebasestorage.app",
+
     messagingSenderId: "555859205094",
-    appId: "1:55585920597ee165161427"
+
+    appId: "1:555859205094:web:0a243c20597ee165161427"
 };
 
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
 
-const blocksRef = ref(db, "blocks");
-
-const moneyRef = ref(db, "money");
 
 
 
 
-
-/* ---------------- BASIC ---------------- */
+/* ---------------- SCENE ---------------- */
 
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x09111f);
+scene.background = new THREE.Color(0x041129);
 
-scene.fog = new THREE.Fog(0x09111f, 30, 140);
+scene.fog = new THREE.Fog(0x041129, 40, 120);
+
+
+
+
+
+/* ---------------- CAMERA ---------------- */
 
 const camera = new THREE.PerspectiveCamera(
     60,
     window.innerWidth / window.innerHeight,
     0.1,
-    500
+    1000
 );
 
-camera.position.set(20, 22, 20);
+camera.position.set(20, 20, 20);
+
+camera.lookAt(0, 0, 0);
+
+
+
+
+
+/* ---------------- RENDERER ---------------- */
 
 const renderer = new THREE.WebGLRenderer({
     antialias: true
@@ -72,31 +86,7 @@ renderer.setSize(
 
 renderer.shadowMap.enabled = true;
 
-renderer.shadowMap.type =
-    THREE.PCFSoftShadowMap;
-
 document.body.appendChild(renderer.domElement);
-
-
-
-
-
-/* ---------------- CONTROLS ---------------- */
-
-const controls = new OrbitControls(
-    camera,
-    renderer.domElement
-);
-
-controls.enableDamping = true;
-
-controls.target.set(0, 0, 0);
-
-controls.maxPolarAngle = Math.PI / 2.1;
-
-controls.minDistance = 10;
-
-controls.maxDistance = 90;
 
 
 
@@ -107,23 +97,19 @@ controls.maxDistance = 90;
 const hemi = new THREE.HemisphereLight(
     0xffffff,
     0x223344,
-    1.4
+    1.5
 );
 
 scene.add(hemi);
 
 const dir = new THREE.DirectionalLight(
     0xffffff,
-    1.4
+    1.2
 );
 
-dir.position.set(20, 30, 10);
+dir.position.set(20, 40, 20);
 
 dir.castShadow = true;
-
-dir.shadow.mapSize.width = 2048;
-
-dir.shadow.mapSize.height = 2048;
 
 scene.add(dir);
 
@@ -133,54 +119,18 @@ scene.add(dir);
 
 /* ---------------- TERRAIN ---------------- */
 
-const terrainGeo =
-    new THREE.PlaneGeometry(
-        120,
-        120,
-        120,
-        120
-    );
+const terrain = new THREE.Mesh(
 
-const pos =
-    terrainGeo.attributes.position;
+    new THREE.PlaneGeometry(120, 120),
 
-for (let i = 0; i < pos.count; i++) {
-
-    const x = pos.getX(i);
-
-    const y = pos.getY(i);
-
-    let h =
-        Math.sin(x * 0.08) * 1.5 +
-        Math.cos(y * 0.06) * 1.2;
-
-    const dist =
-        Math.sqrt(x * x + y * y);
-
-    h += Math.max(0, 10 - dist) * 0.12;
-
-    pos.setZ(i, h);
-}
-
-terrainGeo.computeVertexNormals();
-
-const terrainMat =
     new THREE.MeshStandardMaterial({
-        color: 0x4e7f42,
-        flatShading: false
-    });
-
-const terrain =
-    new THREE.Mesh(
-        terrainGeo,
-        terrainMat
-    );
+        color: 0x0f172a
+    })
+);
 
 terrain.rotation.x = -Math.PI / 2;
 
 terrain.receiveShadow = true;
-
-terrain.name = "terrain";
 
 scene.add(terrain);
 
@@ -188,34 +138,39 @@ scene.add(terrain);
 
 
 
+/* ---------------- GRID ---------------- */
+
+const grid = new THREE.GridHelper(
+    120,
+    120,
+    0x2563eb,
+    0x1e293b
+);
+
+scene.add(grid);
+
+
+
+
+
 /* ---------------- RIVER ---------------- */
 
-const riverGeo =
-    new THREE.PlaneGeometry(
-        12,
-        120,
-        1,
-        1
-    );
+const river = new THREE.Mesh(
 
-const riverMat =
+    new THREE.PlaneGeometry(12, 120),
+
     new THREE.MeshStandardMaterial({
-        color: 0x1e88c9,
+        color: 0x1d4ed8,
         transparent: true,
-        opacity: 0.82
-    });
-
-const river =
-    new THREE.Mesh(
-        riverGeo,
-        riverMat
-    );
+        opacity: 0.7
+    })
+);
 
 river.rotation.x = -Math.PI / 2;
 
-river.position.y = 0.12;
+river.position.y = 0.01;
 
-river.position.x = -12;
+river.position.x = -18;
 
 scene.add(river);
 
@@ -223,104 +178,39 @@ scene.add(river);
 
 
 
-/* ---------------- ROADS ---------------- */
-
-const roadMat =
-    new THREE.MeshStandardMaterial({
-        color: 0x2b313d
-    });
-
-function createRoad(x, z, w, h) {
-
-    const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(w, 0.1, h),
-        roadMat
-    );
-
-    mesh.position.set(x, 0.05, z);
-
-    mesh.receiveShadow = true;
-
-    scene.add(mesh);
-}
-
-createRoad(0, 0, 4, 120);
-
-createRoad(0, 0, 120, 4);
-
-
-
-
-
 /* ---------------- TREES ---------------- */
 
-function createTree(x, z) {
+for (let i = 0; i < 40; i++) {
 
-    const trunk =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                0.3,
-                0.4,
-                2
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x5b3a1e
-            })
-        );
+    const trunk = new THREE.Mesh(
+
+        new THREE.CylinderGeometry(0.2, 0.2, 2),
+
+        new THREE.MeshStandardMaterial({
+            color: 0x78350f
+        })
+    );
+
+    const top = new THREE.Mesh(
+
+        new THREE.ConeGeometry(1, 3, 8),
+
+        new THREE.MeshStandardMaterial({
+            color: 0x15803d
+        })
+    );
+
+    const x = Math.random() * 100 - 50;
+    const z = Math.random() * 100 - 50;
 
     trunk.position.set(x, 1, z);
 
-    const leaves =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                1.4,
-                10,
-                10
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x2f7d32
-            })
-        );
-
-    leaves.position.set(x, 3, z);
-
-    trunk.castShadow = true;
-
-    leaves.castShadow = true;
+    top.position.set(x, 3, z);
 
     scene.add(trunk);
 
-    scene.add(leaves);
+    scene.add(top);
 }
-
-for (let i = 0; i < 80; i++) {
-
-    const x =
-        (Math.random() - 0.5) * 100;
-
-    const z =
-        (Math.random() - 0.5) * 100;
-
-    if (Math.abs(x) < 10) continue;
-
-    if (Math.abs(z) < 10) continue;
-
-    createTree(x, z);
-}
-
-
-
-
-
-/* ---------------- STATE ---------------- */
-
-let currentRole = null;
-
-let currentType = "cube";
-
-const blockMeshes = {};
-
-const occupied = {};
 
 
 
@@ -331,26 +221,16 @@ const occupied = {};
 const roleButtons =
     document.querySelectorAll(".role-btn");
 
-const buildButtons =
-    document.querySelectorAll(".build-btn");
-
-const roleValue =
-    document.getElementById("role-value");
+const buildToolbar =
+    document.getElementById("build-toolbar");
 
 const financePanel =
     document.getElementById("finance-panel");
 
-const buildToolbar =
-    document.getElementById("build-toolbar");
+const roleValue =
+    document.getElementById("role-value");
 
-const moneyValue =
-    document.getElementById("money-value");
-
-
-
-
-
-/* ---------------- ROLE ---------------- */
+let currentRole = null;
 
 roleButtons.forEach(btn => {
 
@@ -367,28 +247,41 @@ roleButtons.forEach(btn => {
         roleValue.innerText =
             btn.innerText.toUpperCase();
 
-        updateRoleUI();
+
+
+
+
+        /* ROLE INTERFACES */
+
+        buildToolbar.style.display = "none";
+
+        financePanel.classList.add("hidden");
+
+
+
+
+
+        if (
+            currentRole === "workers"
+        ) {
+
+            buildToolbar.style.display = "flex";
+        }
+
+
+
+
+
+        if (
+            currentRole === "finance"
+        ) {
+
+            financePanel.classList.remove("hidden");
+        }
+
     });
+
 });
-
-function updateRoleUI() {
-
-    financePanel.classList.add("hidden");
-
-    buildToolbar.classList.add("hidden");
-
-    if (currentRole === "finance") {
-        financePanel.classList.remove(
-            "hidden"
-        );
-    }
-
-    if (currentRole === "workers") {
-        buildToolbar.classList.remove(
-            "hidden"
-        );
-    }
-}
 
 
 
@@ -396,20 +289,25 @@ function updateRoleUI() {
 
 /* ---------------- BUILD TYPES ---------------- */
 
+let currentType = "cube";
+
+const buildButtons =
+    document.querySelectorAll(".build-btn");
+
 buildButtons.forEach(btn => {
 
     btn.addEventListener("click", () => {
 
+        currentType = btn.dataset.type;
+
         buildButtons.forEach(b => {
-            b.classList.remove(
-                "active-build"
-            );
+            b.classList.remove("active-build");
         });
 
         btn.classList.add("active-build");
 
-        currentType = btn.dataset.type;
     });
+
 });
 
 
@@ -420,49 +318,52 @@ buildButtons.forEach(btn => {
 
 const materials = {
 
-    cube:
-        new THREE.MeshStandardMaterial({
-            color: 0xb8c5d6
-        }),
+    cube: new THREE.MeshStandardMaterial({
+        color: 0xcbd5e1
+    }),
 
-    wall:
-        new THREE.MeshStandardMaterial({
-            color: 0x677489
-        }),
+    wall: new THREE.MeshStandardMaterial({
+        color: 0x94a3b8
+    }),
 
-    roof:
-        new THREE.MeshStandardMaterial({
-            color: 0xc34c35
-        }),
+    roof: new THREE.MeshStandardMaterial({
+        color: 0xdc2626
+    }),
 
-    window:
-        new THREE.MeshStandardMaterial({
-            color: 0x79d7ff,
-            transparent: true,
-            opacity: 0.55
-        }),
+    window: new THREE.MeshStandardMaterial({
+        color: 0x7dd3fc,
+        transparent: true,
+        opacity: 0.5
+    }),
 
-    door:
-        new THREE.MeshStandardMaterial({
-            color: 0x6f421d
-        })
+    door: new THREE.MeshStandardMaterial({
+        color: 0x78350f
+    })
 };
 
 
 
 
 
-/* ---------------- BLOCK ---------------- */
+/* ---------------- OBJECT STORAGE ---------------- */
 
-function createBlock(id, data) {
+const objects = {};
 
-    let geo;
+
+
+
+
+/* ---------------- CREATE BLOCK ---------------- */
+
+function createBlock(data, firebaseKey) {
+
+    let geometry;
 
     switch (data.type) {
 
         case "wall":
 
-            geo =
+            geometry =
                 new THREE.BoxGeometry(
                     2,
                     1,
@@ -473,7 +374,7 @@ function createBlock(id, data) {
 
         case "roof":
 
-            geo =
+            geometry =
                 new THREE.ConeGeometry(
                     1,
                     1,
@@ -484,7 +385,7 @@ function createBlock(id, data) {
 
         case "window":
 
-            geo =
+            geometry =
                 new THREE.BoxGeometry(
                     1.2,
                     1.2,
@@ -495,7 +396,7 @@ function createBlock(id, data) {
 
         case "door":
 
-            geo =
+            geometry =
                 new THREE.BoxGeometry(
                     1,
                     2,
@@ -506,7 +407,7 @@ function createBlock(id, data) {
 
         default:
 
-            geo =
+            geometry =
                 new THREE.BoxGeometry(
                     1,
                     1,
@@ -514,11 +415,10 @@ function createBlock(id, data) {
                 );
     }
 
-    const mesh =
-        new THREE.Mesh(
-            geo,
-            materials[data.type]
-        );
+    const mesh = new THREE.Mesh(
+        geometry,
+        materials[data.type]
+    );
 
     mesh.position.set(
         data.x,
@@ -530,25 +430,12 @@ function createBlock(id, data) {
 
     mesh.receiveShadow = true;
 
-    if (data.type === "roof") {
-        mesh.rotation.y =
-            Math.PI / 4;
-    }
-
-    mesh.userData.firebaseId = id;
+    mesh.userData.firebaseKey =
+        firebaseKey;
 
     scene.add(mesh);
 
-    blockMeshes[id] = mesh;
-
-    const key =
-        `${data.x}_${data.z}`;
-
-    if (!occupied[key]) {
-        occupied[key] = 0;
-    }
-
-    occupied[key]++;
+    objects[firebaseKey] = mesh;
 }
 
 
@@ -557,32 +444,153 @@ function createBlock(id, data) {
 
 /* ---------------- FIREBASE SYNC ---------------- */
 
-onChildAdded(
-    blocksRef,
-    snapshot => {
+const blocksRef =
+    ref(db, "world/blocks");
 
-        createBlock(
-            snapshot.key,
-            snapshot.val()
+onValue(blocksRef, snapshot => {
+
+    Object.values(objects).forEach(obj => {
+        scene.remove(obj);
+    });
+
+    for (const key in objects) {
+        delete objects[key];
+    }
+
+    const data = snapshot.val();
+
+    if (!data) return;
+
+    Object.entries(data).forEach(
+        ([key, value]) => {
+
+            createBlock(value, key);
+        }
+    );
+
+});
+
+
+
+
+
+/* ---------------- BUILDING ---------------- */
+
+const raycaster = new THREE.Raycaster();
+
+const mouse = new THREE.Vector2();
+
+window.addEventListener(
+    "mousedown",
+    async event => {
+
+        if (
+            event.target.closest(
+                ".left-panel"
+            )
+        ) return;
+
+        if (
+            currentRole !== "workers"
+        ) return;
+
+
+
+
+
+        mouse.x =
+            (event.clientX /
+                window.innerWidth) * 2 - 1;
+
+        mouse.y =
+            -(event.clientY /
+                window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(
+            mouse,
+            camera
         );
+
+
+
+
+
+        const meshes = [
+            terrain,
+            ...Object.values(objects)
+        ];
+
+        const intersects =
+            raycaster.intersectObjects(meshes);
+
+        if (!intersects.length) return;
+
+        const hit = intersects[0];
+
+
+
+
+
+        /* DELETE */
+
+        if (event.button === 2) {
+
+            if (
+                hit.object !== terrain
+            ) {
+
+                const key =
+                    hit.object.userData
+                        .firebaseKey;
+
+                await remove(
+                    ref(
+                        db,
+                        `world/blocks/${key}`
+                    )
+                );
+            }
+
+            return;
+        }
+
+
+
+
+
+        /* BUILD */
+
+        let x = Math.round(hit.point.x);
+
+        let y = 0.5;
+
+        let z = Math.round(hit.point.z);
+
+
+
+
+
+        if (hit.object !== terrain) {
+
+            y =
+                hit.object.position.y + 1;
+        }
+
+        await push(blocksRef, {
+
+            type: currentType,
+
+            x,
+            y,
+            z
+        });
+
     }
 );
 
-onChildRemoved(
-    blocksRef,
-    snapshot => {
-
-        const id = snapshot.key;
-
-        if (blockMeshes[id]) {
-
-            scene.remove(
-                blockMeshes[id]
-            );
-
-            delete blockMeshes[id];
-        }
-    }
+window.addEventListener(
+    "contextmenu",
+    e => e.preventDefault()
 );
 
 
@@ -591,206 +599,70 @@ onChildRemoved(
 
 /* ---------------- MONEY ---------------- */
 
-async function initMoney() {
+const moneyRef =
+    ref(db, "world/money");
 
-    const snap =
-        await get(moneyRef);
+const moneyValue =
+    document.getElementById(
+        "money-value"
+    );
 
-    if (!snap.exists()) {
+onValue(moneyRef, snapshot => {
 
-        set(moneyRef, 100000);
-
-    } else {
-
-        updateMoneyUI(
-            snap.val()
-        );
-    }
-}
-
-initMoney();
-
-function updateMoneyUI(value) {
+    const value =
+        snapshot.val() || 100000;
 
     moneyValue.innerText =
-        `${value.toLocaleString()} ₽`;
-}
+        value.toLocaleString("ru-RU")
+        + " ₽";
 
-document
-    .getElementById("add-money-btn")
-    .addEventListener(
-        "click",
-        async () => {
+});
 
-            const snap =
-                await get(moneyRef);
-
-            const value =
-                snap.val() + 10000;
-
-            set(moneyRef, value);
-
-            updateMoneyUI(value);
-        }
+const addMoneyBtn =
+    document.getElementById(
+        "add-money-btn"
     );
 
-document
-    .getElementById(
+const removeMoneyBtn =
+    document.getElementById(
         "remove-money-btn"
-    )
-    .addEventListener(
-        "click",
-        async () => {
-
-            const snap =
-                await get(moneyRef);
-
-            const value =
-                snap.val() - 10000;
-
-            set(moneyRef, value);
-
-            updateMoneyUI(value);
-        }
     );
 
-
-
-
-
-/* ---------------- BUILD ---------------- */
-
-const raycaster =
-    new THREE.Raycaster();
-
-const mouse =
-    new THREE.Vector2();
-
-window.addEventListener(
+addMoneyBtn.addEventListener(
     "click",
-    onLeftClick
+    async () => {
+
+        const current =
+            Number(
+                moneyValue.innerText
+                    .replace(/\s/g, "")
+                    .replace("₽", "")
+            );
+
+        await set(
+            moneyRef,
+            current + 10000
+        );
+    }
 );
 
-window.addEventListener(
-    "contextmenu",
-    onRightClick
+removeMoneyBtn.addEventListener(
+    "click",
+    async () => {
+
+        const current =
+            Number(
+                moneyValue.innerText
+                    .replace(/\s/g, "")
+                    .replace("₽", "")
+            );
+
+        await set(
+            moneyRef,
+            current - 10000
+        );
+    }
 );
-
-function onLeftClick(event) {
-
-    if (
-        event.target.closest(
-            ".left-panel"
-        )
-    ) return;
-
-    if (
-        event.target.closest(
-            ".bottom-toolbar"
-        )
-    ) return;
-
-    if (
-        currentRole !== "workers"
-    ) return;
-
-    mouse.x =
-        (event.clientX /
-            window.innerWidth) *
-            2 -
-        1;
-
-    mouse.y =
-        -(
-            event.clientY /
-            window.innerHeight
-        ) *
-            2 +
-        1;
-
-    raycaster.setFromCamera(
-        mouse,
-        camera
-    );
-
-    const hits =
-        raycaster.intersectObject(
-            terrain
-        );
-
-    if (!hits.length) return;
-
-    const p = hits[0].point;
-
-    const x = Math.round(p.x);
-
-    const z = Math.round(p.z);
-
-    const key = `${x}_${z}`;
-
-    const level =
-        occupied[key] || 0;
-
-    let y = 0.5 + level;
-
-    push(blocksRef, {
-        type: currentType,
-        x,
-        y,
-        z
-    });
-}
-
-
-
-
-
-/* ---------------- REMOVE ---------------- */
-
-function onRightClick(event) {
-
-    event.preventDefault();
-
-    if (
-        currentRole !== "workers"
-    ) return;
-
-    mouse.x =
-        (event.clientX /
-            window.innerWidth) *
-            2 -
-        1;
-
-    mouse.y =
-        -(
-            event.clientY /
-            window.innerHeight
-        ) *
-            2 +
-        1;
-
-    raycaster.setFromCamera(
-        mouse,
-        camera
-    );
-
-    const hits =
-        raycaster.intersectObjects(
-            Object.values(blockMeshes)
-        );
-
-    if (!hits.length) return;
-
-    const mesh =
-        hits[0].object;
-
-    remove(
-        ref(
-            db,
-            `blocks/${mesh.userData.firebaseId}`
-        )
-    );
-}
 
 
 
@@ -798,24 +670,140 @@ function onRightClick(event) {
 
 /* ---------------- RESET ---------------- */
 
-document
-    .getElementById(
+const resetBtn =
+    document.getElementById(
         "reset-world-btn"
-    )
-    .addEventListener(
-        "click",
-        async () => {
-
-            const ok =
-                confirm(
-                    "Сбросить весь проект?"
-                );
-
-            if (!ok) return;
-
-            await remove(blocksRef);
-        }
     );
+
+resetBtn.addEventListener(
+    "click",
+    async () => {
+
+        const confirmReset =
+            confirm(
+                "Удалить весь мир?"
+            );
+
+        if (!confirmReset) return;
+
+        await set(
+            ref(db, "world"),
+            null
+        );
+
+        await set(
+            moneyRef,
+            100000
+        );
+
+    }
+);
+
+
+
+
+
+/* ---------------- CAMERA ---------------- */
+
+const keys = {};
+
+window.addEventListener(
+    "keydown",
+    e => {
+
+        keys[e.key.toLowerCase()] = true;
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    e => {
+
+        keys[e.key.toLowerCase()] = false;
+    }
+);
+
+window.addEventListener(
+    "wheel",
+    e => {
+
+        camera.position.y +=
+            e.deltaY * 0.01;
+
+        camera.position.y =
+            Math.max(
+                5,
+                Math.min(
+                    80,
+                    camera.position.y
+                )
+            );
+    }
+);
+
+function updateCamera() {
+
+    const speed = 0.25;
+
+    if (keys.w)
+        camera.position.z -= speed;
+
+    if (keys.s)
+        camera.position.z += speed;
+
+    if (keys.a)
+        camera.position.x -= speed;
+
+    if (keys.d)
+        camera.position.x += speed;
+
+    camera.lookAt(0, 0, 0);
+}
+
+
+
+
+
+/* ---------------- MOBILE CAMERA ---------------- */
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+window.addEventListener(
+    "touchstart",
+    e => {
+
+        touchStartX =
+            e.touches[0].clientX;
+
+        touchStartY =
+            e.touches[0].clientY;
+    }
+);
+
+window.addEventListener(
+    "touchmove",
+    e => {
+
+        const dx =
+            e.touches[0].clientX
+            - touchStartX;
+
+        const dy =
+            e.touches[0].clientY
+            - touchStartY;
+
+        camera.position.x -= dx * 0.02;
+
+        camera.position.z -= dy * 0.02;
+
+        touchStartX =
+            e.touches[0].clientX;
+
+        touchStartY =
+            e.touches[0].clientY;
+    }
+);
 
 
 
@@ -852,7 +840,7 @@ function animate() {
         animate
     );
 
-    controls.update();
+    updateCamera();
 
     renderer.render(
         scene,
@@ -861,4 +849,3 @@ function animate() {
 }
 
 animate();
-```
