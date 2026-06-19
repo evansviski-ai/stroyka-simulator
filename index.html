@@ -26,7 +26,7 @@
 
 
 
-    <!-- GLOBAL UI -->
+    <!-- TOPBAR -->
 
     <div class="topbar">
 
@@ -34,18 +34,36 @@
             STROYKA BS
         </div>
 
+
+
+
+
         <div class="money-block">
-            <span>БЮДЖЕТ:</span>
+
+            <span>
+                БЮДЖЕТ:
+            </span>
+
             <span id="money-value">
                 100 000 ₽
             </span>
+
         </div>
 
+
+
+
+
         <div class="role-block">
-            <span>РОЛЬ:</span>
+
+            <span>
+                РОЛЬ:
+            </span>
+
             <span id="role-value">
                 НЕ ВЫБРАНА
             </span>
+
         </div>
 
     </div>
@@ -54,7 +72,7 @@
 
 
 
-    <!-- ROLE SELECT -->
+    <!-- LEFT PANEL -->
 
     <div class="left-panel">
 
@@ -73,12 +91,20 @@
             Совет директоров
         </button>
 
+
+
+
+
         <button
             class="role-btn"
             data-role="finance"
         >
             Финансы
         </button>
+
+
+
+
 
         <button
             class="role-btn"
@@ -87,12 +113,53 @@
             Рабочие
         </button>
 
+
+
+
+
         <button
             class="role-btn"
             data-role="architects"
         >
             Архитекторы
         </button>
+
+
+
+
+
+        <button
+            class="role-btn"
+            data-role="engineers"
+        >
+            Инженеры
+        </button>
+
+
+
+
+
+        <button
+            class="role-btn"
+            data-role="housing"
+        >
+            ЖКХ
+        </button>
+
+
+
+
+
+        <button
+            class="role-btn"
+            data-role="sales"
+        >
+            Продажи
+        </button>
+
+
+
+
 
         <button
             class="role-btn"
@@ -101,33 +168,18 @@
             PR
         </button>
 
-<button
-    class="role-btn"
-    data-role="engineers"
->
-    Инженеры
-</button>
 
-<button
-    class="role-btn"
-    data-role="housing"
->
-    ЖКХ
-</button>
 
-<button
-    class="role-btn"
-    data-role="sales"
->
-    Продажи
-</button>
 
-<button
-    class="role-btn"
-    data-role="hr"
->
-    HR
-</button>
+
+        <button
+            class="role-btn"
+            data-role="hr"
+        >
+            HR
+        </button>
+
+
 
 
 
@@ -164,12 +216,20 @@
             Куб
         </button>
 
+
+
+
+
         <button
             class="build-btn"
             data-type="wall"
         >
             Стена
         </button>
+
+
+
+
 
         <button
             class="build-btn"
@@ -178,12 +238,20 @@
             Крыша
         </button>
 
+
+
+
+
         <button
             class="build-btn"
             data-type="window"
         >
             Окно
         </button>
+
+
+
+
 
         <button
             class="build-btn"
@@ -210,6 +278,10 @@
             <h1>
                 Техническое задание
             </h1>
+
+
+
+
 
             <textarea id="director-notes">
 
@@ -242,6 +314,10 @@
             <h1>
                 Финансовый отдел
             </h1>
+
+
+
+
 
             <div class="finance-grid">
 
@@ -277,6 +353,10 @@
                     +10 000 ₽
                 </button>
 
+
+
+
+
                 <button id="remove-money-btn">
                     −10 000 ₽
                 </button>
@@ -306,6 +386,10 @@
                     PR-доска
                 </h2>
 
+
+
+
+
                 <canvas
                     id="pr-canvas"
                     width="500"
@@ -323,6 +407,10 @@
                 <h2>
                     PR-кампания
                 </h2>
+
+
+
+
 
                 <textarea id="pr-text">
 
@@ -344,7 +432,7 @@
 
 
 
-    <!-- THREE.JS -->
+    <!-- THREE -->
 
     <script
         type="module"
