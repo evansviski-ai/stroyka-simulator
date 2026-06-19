@@ -1,4 +1,7 @@
+```js id="n9v4qs"
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
+
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
@@ -7,6 +10,9 @@ import {
     ref,
     push,
     onChildAdded,
+    onChildRemoved,
+    set,
+    get,
     remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -23,43 +29,74 @@ const firebaseConfig = {
     projectId: "stroyka-bs",
     storageBucket: "stroyka-bs.firebasestorage.app",
     messagingSenderId: "555859205094",
-    appId: "1:555859205094:web:0a243c20597ee165161427"
+    appId: "1:55585920597ee165161427"
 };
 
 const app = initializeApp(firebaseConfig);
 
-const database = getDatabase(app);
+const db = getDatabase(app);
 
-const blocksRef = ref(database, "blocks");
+const blocksRef = ref(db, "blocks");
+
+const moneyRef = ref(db, "money");
 
 
 
 
 
-/* ---------------- THREE ---------------- */
+/* ---------------- BASIC ---------------- */
 
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x081225);
+scene.background = new THREE.Color(0x09111f);
+
+scene.fog = new THREE.Fog(0x09111f, 30, 140);
 
 const camera = new THREE.PerspectiveCamera(
     60,
     window.innerWidth / window.innerHeight,
     0.1,
-    1000
+    500
 );
 
-camera.position.set(12, 14, 12);
+camera.position.set(20, 22, 20);
 
 const renderer = new THREE.WebGLRenderer({
     antialias: true
 });
 
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
 
 renderer.shadowMap.enabled = true;
 
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
 document.body.appendChild(renderer.domElement);
+
+
+
+
+
+/* ---------------- CONTROLS ---------------- */
+
+const controls = new OrbitControls(
+    camera,
+    renderer.domElement
+);
+
+controls.enableDamping = true;
+
+controls.target.set(0, 0, 0);
+
+controls.maxPolarAngle = Math.PI / 2.1;
+
+controls.minDistance = 10;
+
+controls.maxDistance = 90;
 
 
 
@@ -70,57 +107,206 @@ document.body.appendChild(renderer.domElement);
 const hemi = new THREE.HemisphereLight(
     0xffffff,
     0x223344,
-    1.2
+    1.4
 );
 
 scene.add(hemi);
 
-const dirLight = new THREE.DirectionalLight(
+const dir = new THREE.DirectionalLight(
     0xffffff,
-    1
+    1.4
 );
 
-dirLight.position.set(10, 20, 10);
+dir.position.set(20, 30, 10);
 
-dirLight.castShadow = true;
+dir.castShadow = true;
 
-scene.add(dirLight);
+dir.shadow.mapSize.width = 2048;
 
+dir.shadow.mapSize.height = 2048;
 
-
-
-
-/* ---------------- GRID ---------------- */
-
-const grid = new THREE.GridHelper(
-    50,
-    50,
-    0x3b82f6,
-    0x1e293b
-);
-
-scene.add(grid);
+scene.add(dir);
 
 
 
 
 
-/* ---------------- GROUND ---------------- */
+/* ---------------- TERRAIN ---------------- */
 
-const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(50, 50),
+const terrainGeo =
+    new THREE.PlaneGeometry(
+        120,
+        120,
+        120,
+        120
+    );
+
+const pos =
+    terrainGeo.attributes.position;
+
+for (let i = 0; i < pos.count; i++) {
+
+    const x = pos.getX(i);
+
+    const y = pos.getY(i);
+
+    let h =
+        Math.sin(x * 0.08) * 1.5 +
+        Math.cos(y * 0.06) * 1.2;
+
+    const dist =
+        Math.sqrt(x * x + y * y);
+
+    h += Math.max(0, 10 - dist) * 0.12;
+
+    pos.setZ(i, h);
+}
+
+terrainGeo.computeVertexNormals();
+
+const terrainMat =
     new THREE.MeshStandardMaterial({
-        color: 0x0f172a
-    })
-);
+        color: 0x4e7f42,
+        flatShading: false
+    });
 
-ground.rotation.x = -Math.PI / 2;
+const terrain =
+    new THREE.Mesh(
+        terrainGeo,
+        terrainMat
+    );
 
-ground.receiveShadow = true;
+terrain.rotation.x = -Math.PI / 2;
 
-ground.name = "ground";
+terrain.receiveShadow = true;
 
-scene.add(ground);
+terrain.name = "terrain";
+
+scene.add(terrain);
+
+
+
+
+
+/* ---------------- RIVER ---------------- */
+
+const riverGeo =
+    new THREE.PlaneGeometry(
+        12,
+        120,
+        1,
+        1
+    );
+
+const riverMat =
+    new THREE.MeshStandardMaterial({
+        color: 0x1e88c9,
+        transparent: true,
+        opacity: 0.82
+    });
+
+const river =
+    new THREE.Mesh(
+        riverGeo,
+        riverMat
+    );
+
+river.rotation.x = -Math.PI / 2;
+
+river.position.y = 0.12;
+
+river.position.x = -12;
+
+scene.add(river);
+
+
+
+
+
+/* ---------------- ROADS ---------------- */
+
+const roadMat =
+    new THREE.MeshStandardMaterial({
+        color: 0x2b313d
+    });
+
+function createRoad(x, z, w, h) {
+
+    const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(w, 0.1, h),
+        roadMat
+    );
+
+    mesh.position.set(x, 0.05, z);
+
+    mesh.receiveShadow = true;
+
+    scene.add(mesh);
+}
+
+createRoad(0, 0, 4, 120);
+
+createRoad(0, 0, 120, 4);
+
+
+
+
+
+/* ---------------- TREES ---------------- */
+
+function createTree(x, z) {
+
+    const trunk =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.3,
+                0.4,
+                2
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x5b3a1e
+            })
+        );
+
+    trunk.position.set(x, 1, z);
+
+    const leaves =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                1.4,
+                10,
+                10
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x2f7d32
+            })
+        );
+
+    leaves.position.set(x, 3, z);
+
+    trunk.castShadow = true;
+
+    leaves.castShadow = true;
+
+    scene.add(trunk);
+
+    scene.add(leaves);
+}
+
+for (let i = 0; i < 80; i++) {
+
+    const x =
+        (Math.random() - 0.5) * 100;
+
+    const z =
+        (Math.random() - 0.5) * 100;
+
+    if (Math.abs(x) < 10) continue;
+
+    if (Math.abs(z) < 10) continue;
+
+    createTree(x, z);
+}
 
 
 
@@ -132,50 +318,39 @@ let currentRole = null;
 
 let currentType = "cube";
 
+const blockMeshes = {};
+
 const occupied = {};
 
-const blockMap = {};
-
-const blockMeshes = [];
 
 
 
 
+/* ---------------- UI ---------------- */
 
-/* ---------------- MATERIALS ---------------- */
+const roleButtons =
+    document.querySelectorAll(".role-btn");
 
-const materials = {
+const buildButtons =
+    document.querySelectorAll(".build-btn");
 
-    cube: new THREE.MeshStandardMaterial({
-        color: 0x94a3b8
-    }),
+const roleValue =
+    document.getElementById("role-value");
 
-    wall: new THREE.MeshStandardMaterial({
-        color: 0x64748b
-    }),
+const financePanel =
+    document.getElementById("finance-panel");
 
-    roof: new THREE.MeshStandardMaterial({
-        color: 0xdc2626
-    }),
+const buildToolbar =
+    document.getElementById("build-toolbar");
 
-    window: new THREE.MeshStandardMaterial({
-        color: 0x7dd3fc,
-        transparent: true,
-        opacity: 0.5
-    }),
-
-    door: new THREE.MeshStandardMaterial({
-        color: 0x78350f
-    })
-};
+const moneyValue =
+    document.getElementById("money-value");
 
 
 
 
 
-/* ---------------- ROLE UI ---------------- */
-
-const roleButtons = document.querySelectorAll(".role-btn");
+/* ---------------- ROLE ---------------- */
 
 roleButtons.forEach(btn => {
 
@@ -189,31 +364,51 @@ roleButtons.forEach(btn => {
 
         currentRole = btn.dataset.role;
 
-        console.log("ROLE:", currentRole);
+        roleValue.innerText =
+            btn.innerText.toUpperCase();
+
+        updateRoleUI();
     });
 });
 
+function updateRoleUI() {
+
+    financePanel.classList.add("hidden");
+
+    buildToolbar.classList.add("hidden");
+
+    if (currentRole === "finance") {
+        financePanel.classList.remove(
+            "hidden"
+        );
+    }
+
+    if (currentRole === "workers") {
+        buildToolbar.classList.remove(
+            "hidden"
+        );
+    }
+}
 
 
 
 
-/* ---------------- BUILD UI ---------------- */
 
-const buildButtons = document.querySelectorAll(".build-btn");
+/* ---------------- BUILD TYPES ---------------- */
 
 buildButtons.forEach(btn => {
 
     btn.addEventListener("click", () => {
 
-        currentType = btn.dataset.type;
-
         buildButtons.forEach(b => {
-            b.classList.remove("active-build");
+            b.classList.remove(
+                "active-build"
+            );
         });
 
         btn.classList.add("active-build");
 
-        console.log("BUILD:", currentType);
+        currentType = btn.dataset.type;
     });
 });
 
@@ -221,66 +416,109 @@ buildButtons.forEach(btn => {
 
 
 
-/* ---------------- CREATE BLOCK ---------------- */
+/* ---------------- MATERIALS ---------------- */
+
+const materials = {
+
+    cube:
+        new THREE.MeshStandardMaterial({
+            color: 0xb8c5d6
+        }),
+
+    wall:
+        new THREE.MeshStandardMaterial({
+            color: 0x677489
+        }),
+
+    roof:
+        new THREE.MeshStandardMaterial({
+            color: 0xc34c35
+        }),
+
+    window:
+        new THREE.MeshStandardMaterial({
+            color: 0x79d7ff,
+            transparent: true,
+            opacity: 0.55
+        }),
+
+    door:
+        new THREE.MeshStandardMaterial({
+            color: 0x6f421d
+        })
+};
+
+
+
+
+
+/* ---------------- BLOCK ---------------- */
 
 function createBlock(id, data) {
 
-    let geometry;
-    let material;
+    let geo;
 
     switch (data.type) {
 
-        case "cube":
-
-            geometry = new THREE.BoxGeometry(1, 1, 1);
-
-            material = materials.cube;
-
-            break;
-
         case "wall":
 
-            geometry = new THREE.BoxGeometry(2, 1, 0.3);
-
-            material = materials.wall;
+            geo =
+                new THREE.BoxGeometry(
+                    2,
+                    1,
+                    0.3
+                );
 
             break;
 
         case "roof":
 
-            geometry = new THREE.ConeGeometry(1, 1, 4);
-
-            material = materials.roof;
+            geo =
+                new THREE.ConeGeometry(
+                    1,
+                    1,
+                    4
+                );
 
             break;
 
         case "window":
 
-            geometry = new THREE.BoxGeometry(1.2, 1.2, 0.1);
-
-            material = materials.window;
+            geo =
+                new THREE.BoxGeometry(
+                    1.2,
+                    1.2,
+                    0.1
+                );
 
             break;
 
         case "door":
 
-            geometry = new THREE.BoxGeometry(1, 2, 0.2);
-
-            material = materials.door;
+            geo =
+                new THREE.BoxGeometry(
+                    1,
+                    2,
+                    0.2
+                );
 
             break;
 
         default:
 
-            geometry = new THREE.BoxGeometry(1, 1, 1);
-
-            material = materials.cube;
+            geo =
+                new THREE.BoxGeometry(
+                    1,
+                    1,
+                    1
+                );
     }
 
-    const mesh = new THREE.Mesh(
-        geometry,
-        material
-    );
+    const mesh =
+        new THREE.Mesh(
+            geo,
+            materials[data.type]
+        );
 
     mesh.position.set(
         data.x,
@@ -288,23 +526,23 @@ function createBlock(id, data) {
         data.z
     );
 
-    if (data.type === "roof") {
-        mesh.rotation.y = Math.PI / 4;
-    }
-
     mesh.castShadow = true;
 
     mesh.receiveShadow = true;
+
+    if (data.type === "roof") {
+        mesh.rotation.y =
+            Math.PI / 4;
+    }
 
     mesh.userData.firebaseId = id;
 
     scene.add(mesh);
 
-    blockMeshes.push(mesh);
+    blockMeshes[id] = mesh;
 
-    blockMap[id] = mesh;
-
-    const key = `${data.x}_${data.z}`;
+    const key =
+        `${data.x}_${data.z}`;
 
     if (!occupied[key]) {
         occupied[key] = 0;
@@ -317,84 +555,183 @@ function createBlock(id, data) {
 
 
 
-/* ---------------- FIREBASE LOAD ---------------- */
+/* ---------------- FIREBASE SYNC ---------------- */
 
-onChildAdded(blocksRef, snapshot => {
+onChildAdded(
+    blocksRef,
+    snapshot => {
 
-    const data = snapshot.val();
+        createBlock(
+            snapshot.key,
+            snapshot.val()
+        );
+    }
+);
 
-    const id = snapshot.key;
+onChildRemoved(
+    blocksRef,
+    snapshot => {
 
-    createBlock(id, data);
-});
+        const id = snapshot.key;
 
+        if (blockMeshes[id]) {
 
+            scene.remove(
+                blockMeshes[id]
+            );
 
-
-
-/* ---------------- BUILDING ---------------- */
-
-const raycaster = new THREE.Raycaster();
-
-const mouse = new THREE.Vector2();
-
-window.addEventListener("click", onLeftClick);
-
-window.addEventListener("contextmenu", onRightClick);
+            delete blockMeshes[id];
+        }
+    }
+);
 
 
 
 
 
-/* ---------------- LEFT CLICK ---------------- */
+/* ---------------- MONEY ---------------- */
+
+async function initMoney() {
+
+    const snap =
+        await get(moneyRef);
+
+    if (!snap.exists()) {
+
+        set(moneyRef, 100000);
+
+    } else {
+
+        updateMoneyUI(
+            snap.val()
+        );
+    }
+}
+
+initMoney();
+
+function updateMoneyUI(value) {
+
+    moneyValue.innerText =
+        `${value.toLocaleString()} ₽`;
+}
+
+document
+    .getElementById("add-money-btn")
+    .addEventListener(
+        "click",
+        async () => {
+
+            const snap =
+                await get(moneyRef);
+
+            const value =
+                snap.val() + 10000;
+
+            set(moneyRef, value);
+
+            updateMoneyUI(value);
+        }
+    );
+
+document
+    .getElementById(
+        "remove-money-btn"
+    )
+    .addEventListener(
+        "click",
+        async () => {
+
+            const snap =
+                await get(moneyRef);
+
+            const value =
+                snap.val() - 10000;
+
+            set(moneyRef, value);
+
+            updateMoneyUI(value);
+        }
+    );
+
+
+
+
+
+/* ---------------- BUILD ---------------- */
+
+const raycaster =
+    new THREE.Raycaster();
+
+const mouse =
+    new THREE.Vector2();
+
+window.addEventListener(
+    "click",
+    onLeftClick
+);
+
+window.addEventListener(
+    "contextmenu",
+    onRightClick
+);
 
 function onLeftClick(event) {
 
-    if (event.target.closest(".sidebar")) return;
+    if (
+        event.target.closest(
+            ".left-panel"
+        )
+    ) return;
 
-    if (currentRole !== "workers") {
+    if (
+        event.target.closest(
+            ".bottom-toolbar"
+        )
+    ) return;
 
-        alert("Только рабочие могут строить");
-
-        return;
-    }
+    if (
+        currentRole !== "workers"
+    ) return;
 
     mouse.x =
-        (event.clientX / window.innerWidth) * 2 - 1;
+        (event.clientX /
+            window.innerWidth) *
+            2 -
+        1;
 
     mouse.y =
-        -(event.clientY / window.innerHeight) * 2 + 1;
+        -(
+            event.clientY /
+            window.innerHeight
+        ) *
+            2 +
+        1;
 
-    raycaster.setFromCamera(mouse, camera);
+    raycaster.setFromCamera(
+        mouse,
+        camera
+    );
 
-    const intersects =
-        raycaster.intersectObject(ground);
+    const hits =
+        raycaster.intersectObject(
+            terrain
+        );
 
-    if (intersects.length === 0) return;
+    if (!hits.length) return;
 
-    const point = intersects[0].point;
+    const p = hits[0].point;
 
-    const x = Math.round(point.x);
+    const x = Math.round(p.x);
 
-    const z = Math.round(point.z);
+    const z = Math.round(p.z);
 
     const key = `${x}_${z}`;
 
-    const level = occupied[key] || 0;
+    const level =
+        occupied[key] || 0;
 
     let y = 0.5 + level;
-
-    if (currentType === "door") {
-        y = 1 + level;
-    }
-
-    if (currentType === "roof") {
-        y = 1 + level;
-    }
-
-    if (currentType === "window") {
-        y = 1.2 + level;
-    }
 
     push(blocksRef, {
         type: currentType,
@@ -408,140 +745,77 @@ function onLeftClick(event) {
 
 
 
-/* ---------------- REMOVE BLOCK ---------------- */
+/* ---------------- REMOVE ---------------- */
 
 function onRightClick(event) {
 
     event.preventDefault();
 
-    if (currentRole !== "workers") {
-
-        alert("Только рабочие могут сносить");
-
-        return;
-    }
+    if (
+        currentRole !== "workers"
+    ) return;
 
     mouse.x =
-        (event.clientX / window.innerWidth) * 2 - 1;
+        (event.clientX /
+            window.innerWidth) *
+            2 -
+        1;
 
     mouse.y =
-        -(event.clientY / window.innerHeight) * 2 + 1;
+        -(
+            event.clientY /
+            window.innerHeight
+        ) *
+            2 +
+        1;
 
-    raycaster.setFromCamera(mouse, camera);
+    raycaster.setFromCamera(
+        mouse,
+        camera
+    );
 
-    const intersects =
-        raycaster.intersectObjects(blockMeshes);
-
-    if (intersects.length === 0) return;
-
-    const mesh = intersects[0].object;
-
-    const id = mesh.userData.firebaseId;
-
-    const pos = mesh.position;
-
-    const key = `${Math.round(pos.x)}_${Math.round(pos.z)}`;
-
-    if (occupied[key]) {
-        occupied[key]--;
-    }
-
-    scene.remove(mesh);
-
-    remove(ref(database, `blocks/${id}`));
-}
-
-
-
-
-
-/* ---------------- CAMERA ---------------- */
-
-const keys = {};
-
-window.addEventListener("keydown", e => {
-
-    keys[e.key.toLowerCase()] = true;
-});
-
-window.addEventListener("keyup", e => {
-
-    keys[e.key.toLowerCase()] = false;
-});
-
-window.addEventListener("wheel", e => {
-
-    camera.position.y += e.deltaY * 0.01;
-
-    camera.position.y =
-        Math.max(
-            4,
-            Math.min(40, camera.position.y)
+    const hits =
+        raycaster.intersectObjects(
+            Object.values(blockMeshes)
         );
-});
 
+    if (!hits.length) return;
 
+    const mesh =
+        hits[0].object;
 
-
-
-/* ---------------- MOBILE TOUCH ---------------- */
-
-let touchStartX = 0;
-
-let touchStartY = 0;
-
-window.addEventListener("touchstart", e => {
-
-    touchStartX = e.touches[0].clientX;
-
-    touchStartY = e.touches[0].clientY;
-});
-
-window.addEventListener("touchmove", e => {
-
-    const dx =
-        e.touches[0].clientX - touchStartX;
-
-    const dy =
-        e.touches[0].clientY - touchStartY;
-
-    camera.position.x -= dx * 0.01;
-
-    camera.position.z -= dy * 0.01;
-
-    touchStartX = e.touches[0].clientX;
-
-    touchStartY = e.touches[0].clientY;
-});
-
-
-
-
-
-/* ---------------- UPDATE CAMERA ---------------- */
-
-function updateCamera() {
-
-    const speed = 0.15;
-
-    if (keys["w"]) {
-        camera.position.z -= speed;
-    }
-
-    if (keys["s"]) {
-        camera.position.z += speed;
-    }
-
-    if (keys["a"]) {
-        camera.position.x -= speed;
-    }
-
-    if (keys["d"]) {
-        camera.position.x += speed;
-    }
-
-    camera.lookAt(0, 0, 0);
+    remove(
+        ref(
+            db,
+            `blocks/${mesh.userData.firebaseId}`
+        )
+    );
 }
+
+
+
+
+
+/* ---------------- RESET ---------------- */
+
+document
+    .getElementById(
+        "reset-world-btn"
+    )
+    .addEventListener(
+        "click",
+        async () => {
+
+            const ok =
+                confirm(
+                    "Сбросить весь проект?"
+                );
+
+            if (!ok) return;
+
+            await remove(blocksRef);
+        }
+    );
 
 
 
@@ -549,32 +823,42 @@ function updateCamera() {
 
 /* ---------------- RESIZE ---------------- */
 
-window.addEventListener("resize", () => {
+window.addEventListener(
+    "resize",
+    () => {
 
-    camera.aspect =
-        window.innerWidth / window.innerHeight;
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
 
-    camera.updateProjectionMatrix();
+        camera.updateProjectionMatrix();
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
-});
-
-
-
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+    }
+);
 
 
-/* ---------------- ANIMATE ---------------- */
+
+
+
+/* ---------------- LOOP ---------------- */
 
 function animate() {
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(
+        animate
+    );
 
-    updateCamera();
+    controls.update();
 
-    renderer.render(scene, camera);
+    renderer.render(
+        scene,
+        camera
+    );
 }
 
 animate();
+```
