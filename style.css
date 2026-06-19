@@ -1,35 +1,33 @@
-```css id="npr3aj"
+```css id="c3o3ux"
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html,
-body {
 
-    width: 100%;
-    height: 100%;
+
+
+
+body {
 
     overflow: hidden;
 
-    font-family: Inter, Arial, sans-serif;
+    font-family:
+        Inter,
+        Arial,
+        sans-serif;
 
     background:
-        radial-gradient(
-            circle at top,
-            #16243d,
-            #09111f 60%
-        );
+        #07111f;
 
-    color: white;
+    color:
+        white;
 }
 
 
 
 
-
-/* ---------------- CANVAS ---------------- */
 
 canvas {
 
@@ -40,153 +38,120 @@ canvas {
 
 
 
-/* ---------------- TOPBAR ---------------- */
+/* =========================================================
+   TOPBAR
+========================================================= */
 
 .topbar {
 
     position: fixed;
 
-    top: 18px;
-    left: 18px;
-    right: 18px;
+    top: 0;
+
+    left: 0;
+
+    width: 100%;
+
+    height: 72px;
+
+    padding: 14px 24px;
 
     display: flex;
 
     justify-content: space-between;
 
-    align-items: flex-start;
+    align-items: center;
+
+    background:
+        rgba(7,17,31,0.92);
+
+    backdrop-filter:
+        blur(12px);
 
     z-index: 1000;
-}
 
-
-
-
-
-/* ---------------- LOGO ---------------- */
-
-.logo-card {
-
-    background:
-        rgba(12, 18, 30, 0.88);
-
-    border:
+    border-bottom:
         1px solid rgba(255,255,255,0.08);
-
-    backdrop-filter: blur(16px);
-
-    border-radius: 22px;
-
-    padding: 18px 22px;
-
-    box-shadow:
-        0 10px 30px rgba(0,0,0,0.4);
-}
-
-.logo-title {
-
-    font-size: 24px;
-
-    font-weight: 800;
-
-    color: #f8b84e;
-
-    letter-spacing: 2px;
-}
-
-.logo-subtitle {
-
-    margin-top: 4px;
-
-    font-size: 12px;
-
-    opacity: 0.7;
-
-    letter-spacing: 1px;
 }
 
 
 
 
 
-/* ---------------- HUD ---------------- */
-
-.hud-group {
-
-    display: flex;
-
-    gap: 14px;
-}
-
-.hud-card {
-
-    min-width: 180px;
-
-    background:
-        rgba(12, 18, 30, 0.88);
-
-    border:
-        1px solid rgba(255,255,255,0.08);
-
-    backdrop-filter: blur(16px);
-
-    border-radius: 20px;
-
-    padding: 16px 20px;
-
-    box-shadow:
-        0 10px 30px rgba(0,0,0,0.4);
-}
-
-.hud-label {
-
-    font-size: 11px;
-
-    opacity: 0.65;
-
-    letter-spacing: 1px;
-
-    margin-bottom: 6px;
-}
-
-.hud-value {
+.logo {
 
     font-size: 22px;
 
-    font-weight: 700;
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+    color:
+        #60a5fa;
 }
 
 
 
 
 
-/* ---------------- LEFT PANEL ---------------- */
+.money-block,
+.role-block {
+
+    background:
+        rgba(255,255,255,0.05);
+
+    padding:
+        10px 16px;
+
+    border-radius: 14px;
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    font-size: 14px;
+}
+
+
+
+
+
+/* =========================================================
+   LEFT PANEL
+========================================================= */
 
 .left-panel {
 
     position: fixed;
 
-    top: 120px;
-    left: 18px;
+    top: 90px;
 
-    width: 270px;
+    left: 20px;
+
+    width: 260px;
 
     background:
-        rgba(12, 18, 30, 0.9);
+        rgba(10,18,35,0.92);
 
     border:
         1px solid rgba(255,255,255,0.08);
 
-    backdrop-filter: blur(18px);
-
-    border-radius: 24px;
+    border-radius: 22px;
 
     padding: 20px;
 
     z-index: 1000;
 
-    box-shadow:
-        0 12px 36px rgba(0,0,0,0.45);
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    backdrop-filter:
+        blur(12px);
 }
 
 
@@ -197,91 +162,13 @@ canvas {
 
     font-size: 13px;
 
-    opacity: 0.7;
+    font-weight: 700;
 
     letter-spacing: 2px;
 
-    margin-bottom: 18px;
-}
+    opacity: 0.7;
 
-
-
-
-
-/* ---------------- BUTTONS ---------------- */
-
-button {
-
-    width: 100%;
-
-    border: none;
-
-    border-radius: 16px;
-
-    padding: 14px;
-
-    margin-bottom: 12px;
-
-    background: #1a2a45;
-
-    color: white;
-
-    font-size: 15px;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-}
-
-button:hover {
-
-    transform: translateY(-2px);
-
-    background: #263a5f;
-}
-
-
-
-
-
-.role-btn.active-role {
-
-    background:
-        linear-gradient(
-            135deg,
-            #ffb347,
-            #ff7847
-        );
-
-    color: #111;
-}
-
-
-
-
-
-.build-btn.active-build {
-
-    background:
-        linear-gradient(
-            135deg,
-            #5eead4,
-            #0ea5e9
-        );
-}
-
-
-
-
-
-.danger-btn {
-
-    background:
-        linear-gradient(
-            135deg,
-            #ef4444,
-            #991b1b
-        );
+    margin-bottom: 8px;
 }
 
 
@@ -290,198 +177,407 @@ button:hover {
 
 .panel-divider {
 
-    width: 100%;
     height: 1px;
 
     background:
         rgba(255,255,255,0.08);
 
-    margin:
-        12px 0 18px 0;
+    margin: 10px 0;
 }
 
 
 
 
 
-/* ---------------- TOOLBAR ---------------- */
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+button {
+
+    border: none;
+
+    outline: none;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+
+
+
+.role-btn,
+.build-btn,
+.finance-actions button {
+
+    padding:
+        14px 16px;
+
+    border-radius: 14px;
+
+    background:
+        rgba(255,255,255,0.06);
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+
+
+
+.role-btn:hover,
+.build-btn:hover,
+.finance-actions button:hover {
+
+    background:
+        rgba(96,165,250,0.25);
+}
+
+
+
+
+
+.active-role,
+.active-build {
+
+    background:
+        #3b82f6 !important;
+
+    color: white;
+}
+
+
+
+
+
+.danger-btn {
+
+    padding:
+        14px;
+
+    border-radius: 14px;
+
+    background:
+        rgba(220,38,38,0.2);
+
+    color:
+        #fca5a5;
+
+    font-weight: 700;
+}
+
+
+
+
+
+.danger-btn:hover {
+
+    background:
+        rgba(220,38,38,0.4);
+}
+
+
+
+
+
+/* =========================================================
+   BUILD TOOLBAR
+========================================================= */
 
 .bottom-toolbar {
 
     position: fixed;
 
-    left: 50%;
-    bottom: 22px;
+    bottom: 24px;
 
-    transform: translateX(-50%);
+    left: 50%;
+
+    transform:
+        translateX(-50%);
 
     display: flex;
 
     gap: 12px;
 
     background:
-        rgba(12, 18, 30, 0.92);
+        rgba(10,18,35,0.92);
 
     border:
         1px solid rgba(255,255,255,0.08);
 
-    backdrop-filter: blur(18px);
+    padding:
+        16px;
 
-    border-radius: 24px;
-
-    padding: 16px;
+    border-radius: 22px;
 
     z-index: 1000;
 
-    box-shadow:
-        0 12px 36px rgba(0,0,0,0.45);
-}
-
-.bottom-toolbar button {
-
-    width: auto;
-
-    min-width: 110px;
-
-    margin: 0;
+    backdrop-filter:
+        blur(12px);
 }
 
 
 
 
 
-/* ---------------- FINANCE PANEL ---------------- */
+/* =========================================================
+   ROLE SCREENS
+========================================================= */
 
-.finance-panel {
+.role-screen {
 
     position: fixed;
 
-    top: 120px;
-    right: 18px;
+    top: 90px;
 
-    width: 250px;
+    left: 320px;
+
+    right: 24px;
+
+    bottom: 24px;
+
+    z-index: 900;
+
+    overflow: auto;
+}
+
+
+
+
+
+.screen-card {
 
     background:
-        rgba(12, 18, 30, 0.9);
+        rgba(10,18,35,0.94);
 
     border:
         1px solid rgba(255,255,255,0.08);
 
-    backdrop-filter: blur(18px);
+    border-radius: 28px;
 
-    border-radius: 24px;
+    padding: 28px;
 
-    padding: 20px;
+    min-height: 100%;
 
-    z-index: 1000;
-
-    box-shadow:
-        0 12px 36px rgba(0,0,0,0.45);
+    backdrop-filter:
+        blur(12px);
 }
 
 
 
 
 
-/* ---------------- HELP ---------------- */
+.screen-card h1,
+.screen-card h2 {
 
-.help-card {
+    margin-bottom: 20px;
 
-    position: fixed;
+    color:
+        #93c5fd;
+}
 
-    right: 18px;
-    bottom: 18px;
 
-    width: 240px;
 
-    background:
-        rgba(12, 18, 30, 0.88);
 
-    border:
-        1px solid rgba(255,255,255,0.08);
 
-    backdrop-filter: blur(16px);
+/* =========================================================
+   TEXTAREAS
+========================================================= */
 
-    border-radius: 20px;
+textarea {
+
+    width: 100%;
+
+    min-height: 400px;
+
+    resize: vertical;
+
+    border: none;
+
+    outline: none;
+
+    border-radius: 18px;
 
     padding: 18px;
 
-    z-index: 1000;
+    background:
+        rgba(255,255,255,0.06);
 
-    font-size: 13px;
+    color: white;
 
-    line-height: 1.7;
+    font-size: 15px;
 
-    opacity: 0.8;
+    line-height: 1.5;
 }
 
 
 
 
 
-/* ---------------- HIDDEN ---------------- */
+/* =========================================================
+   FINANCE
+========================================================= */
+
+.finance-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit,minmax(180px,1fr));
+
+    gap: 16px;
+
+    margin-bottom: 30px;
+}
+
+
+
+
+
+.finance-item {
+
+    background:
+        rgba(255,255,255,0.05);
+
+    padding:
+        18px;
+
+    border-radius: 18px;
+
+    font-weight: 600;
+}
+
+
+
+
+
+.finance-actions {
+
+    display: flex;
+
+    gap: 16px;
+}
+
+
+
+
+
+/* =========================================================
+   PR
+========================================================= */
+
+.pr-layout {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 24px;
+}
+
+
+
+
+
+#pr-canvas {
+
+    width: 100%;
+
+    background: white;
+
+    border-radius: 18px;
+
+    touch-action: none;
+}
+
+
+
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
 
 .hidden {
 
-    display: none;
+    display: none !important;
 }
 
 
 
 
 
-/* ---------------- MOBILE ---------------- */
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media (max-width: 900px) {
 
     .topbar {
 
-        flex-direction: column;
+        flex-wrap: wrap;
+
+        height: auto;
 
         gap: 12px;
     }
 
-    .hud-group {
 
-        width: 100%;
 
-        flex-direction: column;
-    }
+
 
     .left-panel {
 
-        width: calc(100vw - 36px);
+        width: calc(100% - 40px);
 
-        top: auto;
+        top: 120px;
 
-        bottom: 110px;
-
-        max-height: 40vh;
-
-        overflow-y: auto;
+        left: 20px;
     }
 
-    .finance-panel {
 
-        width: calc(100vw - 36px);
 
-        top: auto;
 
-        bottom: 110px;
+
+    .role-screen {
+
+        top: 520px;
+
+        left: 20px;
+
+        right: 20px;
+
+        bottom: 20px;
     }
+
+
+
+
 
     .bottom-toolbar {
 
-        width: calc(100vw - 20px);
+        width: calc(100% - 40px);
 
         overflow-x: auto;
 
         justify-content: flex-start;
     }
 
-    .help-card {
 
-        display: none;
+
+
+
+    .pr-layout {
+
+        grid-template-columns:
+            1fr;
     }
 }
 ```
