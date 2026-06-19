@@ -11,7 +11,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Stroyka Business Simulator</title>
+    <title>STROYKA BS</title>
 
     <link
         rel="stylesheet"
@@ -26,62 +26,26 @@
 
 
 
-    <!-- TOP HUD -->
+    <!-- GLOBAL UI -->
 
     <div class="topbar">
 
-        <div class="logo-card">
-
-            <div class="logo-title">
-                STROYKA
-            </div>
-
-            <div class="logo-subtitle">
-                BUSINESS SIMULATOR
-            </div>
-
+        <div class="logo">
+            STROYKA BS
         </div>
 
+        <div class="money-block">
+            <span>БЮДЖЕТ:</span>
+            <span id="money-value">
+                100 000 ₽
+            </span>
+        </div>
 
-
-
-
-        <div class="hud-group">
-
-            <div class="hud-card">
-
-                <div class="hud-label">
-                    БЮДЖЕТ
-                </div>
-
-                <div
-                    class="hud-value"
-                    id="money-value"
-                >
-                    100 000 ₽
-                </div>
-
-            </div>
-
-
-
-
-
-            <div class="hud-card">
-
-                <div class="hud-label">
-                    РОЛЬ
-                </div>
-
-                <div
-                    class="hud-value"
-                    id="role-value"
-                >
-                    НЕ ВЫБРАНА
-                </div>
-
-            </div>
-
+        <div class="role-block">
+            <span>РОЛЬ:</span>
+            <span id="role-value">
+                НЕ ВЫБРАНА
+            </span>
         </div>
 
     </div>
@@ -90,7 +54,7 @@
 
 
 
-    <!-- LEFT PANEL -->
+    <!-- ROLE SELECT -->
 
     <div class="left-panel">
 
@@ -132,37 +96,9 @@
 
         <button
             class="role-btn"
-            data-role="engineers"
-        >
-            Инженеры
-        </button>
-
-        <button
-            class="role-btn"
-            data-role="housing"
-        >
-            ЖКХ
-        </button>
-
-        <button
-            class="role-btn"
-            data-role="sales"
-        >
-            Продажи
-        </button>
-
-        <button
-            class="role-btn"
             data-role="pr"
         >
             PR
-        </button>
-
-        <button
-            class="role-btn"
-            data-role="hr"
-        >
-            HR
         </button>
 
 
@@ -188,10 +124,10 @@
 
 
 
-    <!-- BUILD PANEL -->
+    <!-- WORKERS UI -->
 
     <div
-        class="bottom-toolbar"
+        class="bottom-toolbar hidden"
         id="build-toolbar"
     >
 
@@ -236,24 +172,92 @@
 
 
 
-    <!-- FINANCE PANEL -->
+    <!-- DIRECTORS -->
 
     <div
-        class="finance-panel hidden"
-        id="finance-panel"
+        id="directors-ui"
+        class="role-screen hidden"
     >
 
-        <div class="panel-title">
-            ФИНАНСЫ
+        <div class="screen-card">
+
+            <h1>
+                Техническое задание
+            </h1>
+
+            <textarea id="director-notes">
+
+Построить жилой квартал:
+- 3 жилых дома
+- парковка
+- зона отдыха
+- бюджет: 100 000 ₽
+- срок: 15 минут
+
+            </textarea>
+
         </div>
 
-        <button id="add-money-btn">
-            +10 000 ₽
-        </button>
+    </div>
 
-        <button id="remove-money-btn">
-            −10 000 ₽
-        </button>
+
+
+
+
+    <!-- FINANCE -->
+
+    <div
+        id="finance-ui"
+        class="role-screen hidden"
+    >
+
+        <div class="screen-card">
+
+            <h1>
+                Финансовый отдел
+            </h1>
+
+            <div class="finance-grid">
+
+                <div class="finance-item">
+                    Куб: 500 ₽
+                </div>
+
+                <div class="finance-item">
+                    Стена: 800 ₽
+                </div>
+
+                <div class="finance-item">
+                    Крыша: 1200 ₽
+                </div>
+
+                <div class="finance-item">
+                    Окно: 300 ₽
+                </div>
+
+                <div class="finance-item">
+                    Дверь: 600 ₽
+                </div>
+
+            </div>
+
+
+
+
+
+            <div class="finance-actions">
+
+                <button id="add-money-btn">
+                    +10 000 ₽
+                </button>
+
+                <button id="remove-money-btn">
+                    −10 000 ₽
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
@@ -261,21 +265,60 @@
 
 
 
-    <!-- INFO -->
+    <!-- PR -->
 
-    <div class="help-card">
+    <div
+        id="pr-ui"
+        class="role-screen hidden"
+    >
 
-        ЛКМ — строить<br>
-        ПКМ — снести<br><br>
+        <div class="screen-card pr-layout">
 
-        WASD — камера<br>
-        Колесо — зум
+            <div class="pr-left">
+
+                <h2>
+                    PR-доска
+                </h2>
+
+                <canvas
+                    id="pr-canvas"
+                    width="500"
+                    height="400"
+                ></canvas>
+
+            </div>
+
+
+
+
+
+            <div class="pr-right">
+
+                <h2>
+                    PR-кампания
+                </h2>
+
+                <textarea id="pr-text">
+
+Жилой квартал будущего.
+Современная среда.
+Комфорт.
+Экология.
+Безопасность.
+
+                </textarea>
+
+            </div>
+
+        </div>
 
     </div>
 
 
 
 
+
+    <!-- THREE.JS -->
 
     <script
         type="module"
