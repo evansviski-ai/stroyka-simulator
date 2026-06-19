@@ -1,62 +1,39 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
-
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js";
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-import {
-    getDatabase,
-    ref,
-    push,
-    onValue,
-    remove,
-    set
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+```javascript
+import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
 
 
 
 
-/* ======================================================
-   FIREBASE
-====================================================== */
+/* =========================================================
+   STATE
+========================================================= */
 
-const firebaseConfig = {
+const STORAGE_KEY = "stroyka-bs-world";
 
-    apiKey: "AIzaSyCDoON8VQKnb9Eh4UtogG_aqn9P4bMlL4A",
-
-    authDomain: "stroyka-bs.firebaseapp.com",
-
-    databaseURL:
-        "https://stroyka-bs-default-rtdb.europe-west1.firebasedatabase.app",
-
-    projectId: "stroyka-bs",
-
-    storageBucket:
-        "stroyka-bs.firebasestorage.app",
-
-    messagingSenderId:
-        "555859205094",
-
-    appId:
-        "1:555859205094:web:0a243c20597ee165161427"
+const state = {
+    role: null,
+    money: 100000,
+    buildType: "cube",
+    objects: []
 };
 
-const app = initializeApp(firebaseConfig);
-
-const db = getDatabase(app);
 
 
 
 
-
-/* ======================================================
+/* =========================================================
    THREE
-====================================================== */
+========================================================= */
 
 const scene = new THREE.Scene();
 
 scene.background = new THREE.Color(0x07111f);
+
+
+
+
 
 const camera = new THREE.PerspectiveCamera(
     60,
@@ -65,7 +42,11 @@ const camera = new THREE.PerspectiveCamera(
     2000
 );
 
-camera.position.set(35, 30, 35);
+camera.position.set(20, 20, 20);
+
+
+
+
 
 const renderer = new THREE.WebGLRenderer({
     antialias: true
@@ -84,9 +65,9 @@ document.body.appendChild(renderer.domElement);
 
 
 
-/* ======================================================
-   ORBIT CAMERA
-====================================================== */
+/* =========================================================
+   CONTROLS
+========================================================= */
 
 const controls = new OrbitControls(
     camera,
@@ -94,30 +75,28 @@ const controls = new OrbitControls(
 );
 
 controls.enableDamping = true;
+controls.dampingFactor = 0.08;
 
 controls.target.set(0, 0, 0);
 
-controls.maxPolarAngle = Math.PI / 2.1;
-
-controls.minDistance = 8;
-
-controls.maxDistance = 120;
 
 
 
 
-
-/* ======================================================
+/* =========================================================
    LIGHT
-====================================================== */
+========================================================= */
 
-const hemi = new THREE.HemisphereLight(
+const ambient = new THREE.AmbientLight(
     0xffffff,
-    0x223344,
-    1.5
+    1.1
 );
 
-scene.add(hemi);
+scene.add(ambient);
+
+
+
+
 
 const dir = new THREE.DirectionalLight(
     0xffffff,
@@ -134,36 +113,13 @@ scene.add(dir);
 
 
 
-/* ======================================================
-   MAP
-====================================================== */
-
-const ground = new THREE.Mesh(
-
-    new THREE.PlaneGeometry(200, 200),
-
-    new THREE.MeshStandardMaterial({
-        color: 0x183046
-    })
-);
-
-ground.rotation.x = -Math.PI / 2;
-
-ground.receiveShadow = true;
-
-scene.add(ground);
-
-
-
-
-
-/* ======================================================
+/* =========================================================
    GRID
-====================================================== */
+========================================================= */
 
 const grid = new THREE.GridHelper(
-    200,
-    200,
+    120,
+    120,
     0x3b82f6,
     0x1e293b
 );
@@ -174,44 +130,93 @@ scene.add(grid);
 
 
 
-/* ======================================================
-   HILLS
-====================================================== */
+/* =========================================================
+   MATERIALS
+========================================================= */
 
-function createHill(x, z, size, color) {
+const materials = {
+    cube: new THREE.MeshStandardMaterial({
+        color: 0xcbd5e1
+    }),
+
+    wall: new THREE.MeshStandardMaterial({
+        color: 0xb45309
+    }),
+
+    roof: new THREE.MeshStandardMaterial({
+        color: 0xdc2626
+    }),
+
+    window: new THREE.MeshStandardMaterial({
+        color: 0x38bdf8
+    }),
+
+    door: new THREE.MeshStandardMaterial({
+        color: 0x78350f
+    }),
+
+    hill: new THREE.MeshStandardMaterial({
+        color: 0x15803d
+    }),
+
+    mountain: new THREE.MeshStandardMaterial({
+        color: 0x6b7280
+    })
+};
+
+
+
+
+
+/* =========================================================
+   MAP
+========================================================= */
+
+function createHill(x, z, size) {
 
     for (let i = 0; i < size; i++) {
 
-        for (let j = 0; j < size; j++) {
+        const geo = new THREE.BoxGeometry(2, 1, 2);
 
-            const height =
-                Math.floor(
-                    Math.random() * 4
-                ) + 1;
+        const mesh = new THREE.Mesh(
+            geo,
+            materials.hill
+        );
 
-            for (let y = 0; y < height; y++) {
+        mesh.position.set(
+            x + Math.random() * 4,
+            i * 0.5,
+            z + Math.random() * 4
+        );
 
-                const cube = new THREE.Mesh(
+        scene.add(mesh);
+    }
+}
 
-                    new THREE.BoxGeometry(2, 2, 2),
 
-                    new THREE.MeshStandardMaterial({
-                        color
-                    })
-                );
 
-                cube.position.set(
-                    x + i * 2,
-                    y * 2,
-                    z + j * 2
-                );
 
-                cube.castShadow = true;
 
-                cube.receiveShadow = true;
+function createMountain(x, z, height) {
 
-                scene.add(cube);
-            }
+    for (let y = 0; y < height; y++) {
+
+        for (let i = 0; i < height - y; i++) {
+
+            const geo = new THREE.BoxGeometry(2, 2, 2);
+
+            const mesh = new THREE.Mesh(
+                geo,
+                materials.mountain
+            );
+
+            mesh.position.set(
+                x + i * 2,
+                y * 2,
+                z
+            );
+
+            scene.add(mesh);
         }
     }
 }
@@ -220,72 +225,239 @@ function createHill(x, z, size, color) {
 
 
 
-/* ======================================================
-   GENERATED LANDSCAPE
-====================================================== */
+createHill(-15, -15, 8);
+createHill(20, -10, 10);
 
-createHill(-35, -35, 8, 0x3b7d4f);
-
-createHill(20, 20, 10, 0x777777);
+createMountain(-25, 10, 6);
 
 
 
 
 
-/* ======================================================
-   MATERIALS
-====================================================== */
+/* =========================================================
+   RAYCAST
+========================================================= */
 
-const materials = {
+const raycaster = new THREE.Raycaster();
 
-    cube: new THREE.MeshStandardMaterial({
-        color: 0xcbd5e1
-    }),
-
-    wallX: new THREE.MeshStandardMaterial({
-        color: 0x94a3b8
-    }),
-
-    wallZ: new THREE.MeshStandardMaterial({
-        color: 0x64748b
-    }),
-
-    roof: new THREE.MeshStandardMaterial({
-        color: 0xdc2626
-    }),
-
-    window: new THREE.MeshStandardMaterial({
-        color: 0x7dd3fc,
-        transparent: true,
-        opacity: 0.5
-    }),
-
-    door: new THREE.MeshStandardMaterial({
-        color: 0x78350f
-    })
-};
+const mouse = new THREE.Vector2();
 
 
 
 
 
-/* ======================================================
-   STATE
-====================================================== */
+/* =========================================================
+   SAVE / LOAD
+========================================================= */
 
-let currentRole = null;
+function saveWorld() {
 
-let currentType = "cube";
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+            money: state.money,
+            objects: state.objects
+        })
+    );
+}
 
-const placedMeshes = {};
+
+
+
+
+function loadWorld() {
+
+    const raw = localStorage.getItem(STORAGE_KEY);
+
+    if (!raw) return;
+
+    const data = JSON.parse(raw);
+
+    state.money = data.money || 100000;
+
+    document.getElementById("money-value").innerText =
+        `${state.money.toLocaleString()} ₽`;
+
+    data.objects.forEach(addObjectFromData);
+}
 
 
 
 
 
-/* ======================================================
+/* =========================================================
+   BUILDING
+========================================================= */
+
+function createMesh(type) {
+
+    let geo;
+
+    if (type === "wall-x") {
+        geo = new THREE.BoxGeometry(4, 2, 1);
+    }
+
+    else if (type === "wall-z") {
+        geo = new THREE.BoxGeometry(1, 2, 4);
+    }
+
+    else if (type === "roof") {
+        geo = new THREE.BoxGeometry(2, 0.5, 2);
+    }
+
+    else {
+        geo = new THREE.BoxGeometry(2, 2, 2);
+    }
+
+    const mat =
+        materials[type.replace("-x", "").replace("-z", "")]
+        || materials.cube;
+
+    return new THREE.Mesh(geo, mat);
+}
+
+
+
+
+
+function addObjectFromData(data) {
+
+    const mesh = createMesh(data.type);
+
+    mesh.position.set(
+        data.x,
+        data.y,
+        data.z
+    );
+
+    mesh.userData.placed = true;
+
+    scene.add(mesh);
+}
+
+
+
+
+
+function placeObject(position) {
+
+    let type = state.buildType;
+
+    if (type === "wall") {
+
+        type = Math.random() > 0.5
+            ? "wall-x"
+            : "wall-z";
+    }
+
+    const mesh = createMesh(type);
+
+    mesh.position.copy(position);
+
+    mesh.userData.placed = true;
+
+    scene.add(mesh);
+
+    state.objects.push({
+        type,
+        x: position.x,
+        y: position.y,
+        z: position.z
+    });
+
+    saveWorld();
+}
+
+
+
+
+
+/* =========================================================
+   CLICK
+========================================================= */
+
+renderer.domElement.addEventListener(
+    "pointerdown",
+    (event) => {
+
+        if (state.role !== "workers") return;
+
+        mouse.x =
+            (event.clientX / window.innerWidth) * 2 - 1;
+
+        mouse.y =
+            -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects(
+            scene.children
+        );
+
+        if (!intersects.length) return;
+
+        const point = intersects[0].point;
+
+        const snapped = new THREE.Vector3(
+            Math.round(point.x / 2) * 2,
+            1,
+            Math.round(point.z / 2) * 2
+        );
+
+        if (event.button === 0) {
+
+            placeObject(snapped);
+        }
+
+        if (event.button === 2) {
+
+            const obj = intersects[0].object;
+
+            if (!obj.userData.placed) return;
+
+            scene.remove(obj);
+
+            state.objects = state.objects.filter(
+                item =>
+                    !(
+                        item.x === obj.position.x
+                        &&
+                        item.y === obj.position.y
+                        &&
+                        item.z === obj.position.z
+                    )
+            );
+
+            saveWorld();
+        }
+    }
+);
+
+
+
+
+
+window.addEventListener(
+    "contextmenu",
+    (e) => e.preventDefault()
+);
+
+
+
+
+
+/* =========================================================
    UI
-====================================================== */
+========================================================= */
+
+const roleSelectScreen =
+    document.getElementById("role-select-screen");
+
+const roleSelect =
+    document.getElementById("role-select");
+
+const enterRoleBtn =
+    document.getElementById("enter-role-btn");
 
 const roleValue =
     document.getElementById("role-value");
@@ -306,183 +478,112 @@ const prUI =
 
 
 
-/* ======================================================
-   ROLE SWITCH
-====================================================== */
+function hideAllScreens() {
 
-document
-    .querySelectorAll(".role-btn")
-    .forEach(btn => {
+    buildToolbar.classList.add("hidden");
 
-        btn.addEventListener("click", () => {
+    directorsUI.classList.add("hidden");
 
-            currentRole =
-                btn.dataset.role;
+    financeUI.classList.add("hidden");
 
-            roleValue.innerText =
-                btn.innerText;
-
-            document
-                .querySelectorAll(".role-btn")
-                .forEach(b =>
-                    b.classList.remove("active-role")
-                );
-
-            btn.classList.add("active-role");
+    prUI.classList.add("hidden");
+}
 
 
 
 
 
-            directorsUI.classList.add("hidden");
+function enterRole(role) {
 
-            financeUI.classList.add("hidden");
+    state.role = role;
 
-            prUI.classList.add("hidden");
+    roleValue.innerText = role;
 
-            buildToolbar.classList.add("hidden");
+    roleSelectScreen.classList.add("hidden");
 
+    hideAllScreens();
 
+    if (role === "workers") {
+        buildToolbar.classList.remove("hidden");
+    }
 
+    if (role === "directors") {
+        directorsUI.classList.remove("hidden");
+    }
 
+    if (role === "finance") {
+        financeUI.classList.remove("hidden");
+    }
 
-            if (currentRole === "workers") {
-
-                buildToolbar.classList.remove(
-                    "hidden"
-                );
-
-                ground.visible = true;
-
-                grid.visible = true;
-            }
-
-            else {
-
-                ground.visible = false;
-
-                grid.visible = false;
-            }
+    if (role === "pr") {
+        prUI.classList.remove("hidden");
+    }
+}
 
 
 
 
 
-            if (currentRole === "directors") {
-
-                directorsUI.classList.remove(
-                    "hidden"
-                );
-            }
-
-            if (currentRole === "finance") {
-
-                financeUI.classList.remove(
-                    "hidden"
-                );
-            }
-
-            if (currentRole === "pr") {
-
-                prUI.classList.remove(
-                    "hidden"
-                );
-            }
-        });
-    });
+enterRoleBtn.addEventListener(
+    "click",
+    () => {
+        enterRole(roleSelect.value);
+    }
+);
 
 
 
 
 
-/* ======================================================
-   BUILD BUTTONS
-====================================================== */
+document.getElementById(
+    "change-role-btn"
+).addEventListener(
+    "click",
+    () => {
+        roleSelectScreen.classList.remove("hidden");
+    }
+);
 
-document
-    .querySelectorAll(".build-btn")
-    .forEach(btn => {
 
-        btn.addEventListener("click", () => {
 
-            currentType =
-                btn.dataset.type;
+
+
+document.querySelectorAll(".build-btn")
+.forEach(btn => {
+
+    btn.addEventListener(
+        "click",
+        () => {
 
             document
                 .querySelectorAll(".build-btn")
-                .forEach(b =>
-                    b.classList.remove("active-build")
-                );
+                .forEach(b => b.classList.remove("active-build"));
 
             btn.classList.add("active-build");
-        });
-    });
 
-
-
-
-
-/* ======================================================
-   RAYCAST
-====================================================== */
-
-const raycaster = new THREE.Raycaster();
-
-const mouse = new THREE.Vector2();
-
-
-
-
-
-/* ======================================================
-   BUILD
-====================================================== */
-
-window.addEventListener(
-    "pointerdown",
-    e => {
-
-        if (currentRole !== "workers") return;
-
-        if (e.target.closest(".left-panel")) return;
-
-        if (e.target.closest(".bottom-toolbar")) return;
-
-
-
-
-
-        mouse.x =
-            (e.clientX / window.innerWidth) * 2 - 1;
-
-        mouse.y =
-            -(e.clientY / window.innerHeight) * 2 + 1;
-
-        raycaster.setFromCamera(
-            mouse,
-            camera
-        );
-
-        const intersects =
-            raycaster.intersectObject(ground);
-
-        if (!intersects.length) return;
-
-        const p = intersects[0].point;
-
-        const x = Math.round(p.x);
-
-        const z = Math.round(p.z);
-
-        if (e.button === 0) {
-
-            addBlock(x, z);
+            state.buildType =
+                btn.dataset.type;
         }
+    );
+});
 
-        if (e.button === 2) {
 
-            removeBlock(x, z);
-        }
+
+
+
+document.getElementById(
+    "add-money-btn"
+).addEventListener(
+    "click",
+    () => {
+
+        state.money += 10000;
+
+        document.getElementById("money-value")
+            .innerText =
+            `${state.money.toLocaleString()} ₽`;
+
+        saveWorld();
     }
 );
 
@@ -490,107 +591,19 @@ window.addEventListener(
 
 
 
-window.addEventListener(
-    "contextmenu",
-    e => e.preventDefault()
-);
+document.getElementById(
+    "remove-money-btn"
+).addEventListener(
+    "click",
+    () => {
 
+        state.money -= 10000;
 
+        document.getElementById("money-value")
+            .innerText =
+            `${state.money.toLocaleString()} ₽`;
 
-
-
-/* ======================================================
-   CREATE BLOCK
-====================================================== */
-
-function addBlock(x, z) {
-
-    push(
-        ref(db, "world"),
-        {
-            x,
-            z,
-            type: currentType
-        }
-    );
-}
-
-
-
-
-
-function removeBlock(x, z) {
-
-    const worldRef = ref(db, "world");
-
-    onValue(
-        worldRef,
-        snapshot => {
-
-            snapshot.forEach(child => {
-
-                const data = child.val();
-
-                if (
-                    data.x === x &&
-                    data.z === z
-                ) {
-
-                    remove(
-                        ref(
-                            db,
-                            "world/" + child.key
-                        )
-                    );
-                }
-            });
-        },
-        {
-            onlyOnce: true
-        }
-    );
-}
-
-
-
-
-
-/* ======================================================
-   RENDER BLOCKS
-====================================================== */
-
-onValue(
-    ref(db, "world"),
-    snapshot => {
-
-        Object.values(placedMeshes)
-            .forEach(mesh => {
-
-                scene.remove(mesh);
-            });
-
-        for (const k in placedMeshes) {
-
-            delete placedMeshes[k];
-        }
-
-
-
-
-
-        snapshot.forEach(child => {
-
-            const data = child.val();
-
-            const mesh =
-                createMesh(data);
-
-            placedMeshes[
-                child.key
-            ] = mesh;
-
-            scene.add(mesh);
-        });
+        saveWorld();
     }
 );
 
@@ -598,229 +611,86 @@ onValue(
 
 
 
-function createMesh(data) {
+document.getElementById(
+    "reset-world-btn"
+).addEventListener(
+    "click",
+    () => {
 
-    let geo;
+        localStorage.removeItem(STORAGE_KEY);
 
-    let mat;
-
-
-
-
-
-    if (data.type === "cube") {
-
-        geo =
-            new THREE.BoxGeometry(
-                1,
-                1,
-                1
-            );
-
-        mat = materials.cube;
+        location.reload();
     }
+);
 
 
 
 
 
-    if (data.type === "wall") {
-
-        const rotate =
-            Math.random() > 0.5;
-
-        geo =
-            rotate
-                ? new THREE.BoxGeometry(
-                    3,
-                    2,
-                    0.3
-                )
-                : new THREE.BoxGeometry(
-                    0.3,
-                    2,
-                    3
-                );
-
-        mat =
-            rotate
-                ? materials.wallX
-                : materials.wallZ;
-    }
-
-
-
-
-
-    if (data.type === "roof") {
-
-        geo =
-            new THREE.ConeGeometry(
-                1.4,
-                1.5,
-                4
-            );
-
-        mat = materials.roof;
-    }
-
-
-
-
-
-    if (data.type === "window") {
-
-        geo =
-            new THREE.BoxGeometry(
-                1.4,
-                1.2,
-                0.1
-            );
-
-        mat = materials.window;
-    }
-
-
-
-
-
-    if (data.type === "door") {
-
-        geo =
-            new THREE.BoxGeometry(
-                1,
-                2,
-                0.2
-            );
-
-        mat = materials.door;
-    }
-
-
-
-
-
-    const mesh =
-        new THREE.Mesh(geo, mat);
-
-    mesh.position.set(
-        data.x,
-        0.5,
-        data.z
-    );
-
-    mesh.castShadow = true;
-
-    mesh.receiveShadow = true;
-
-    return mesh;
-}
-
-
-
-
-
-/* ======================================================
-   RESET WORLD
-====================================================== */
-
-document
-    .getElementById("reset-world-btn")
-    .addEventListener("click", () => {
-
-        if (
-            confirm(
-                "Сбросить весь мир?"
-            )
-        ) {
-
-            set(
-                ref(db, "world"),
-                null
-            );
-        }
-    });
-
-
-
-
-
-/* ======================================================
+/* =========================================================
    PR DRAW
-====================================================== */
+========================================================= */
 
 const canvas =
     document.getElementById("pr-canvas");
 
-if (canvas) {
+const ctx =
+    canvas.getContext("2d");
 
-    const ctx =
-        canvas.getContext("2d");
+ctx.fillStyle = "white";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let drawing = false;
+let drawing = false;
 
-    canvas.addEventListener(
-        "pointerdown",
-        () => drawing = true
-    );
+canvas.addEventListener(
+    "pointerdown",
+    () => drawing = true
+);
 
-    canvas.addEventListener(
-        "pointerup",
-        () => {
+canvas.addEventListener(
+    "pointerup",
+    () => drawing = false
+);
 
-            drawing = false;
+canvas.addEventListener(
+    "pointermove",
+    (e) => {
 
-            ctx.beginPath();
-        }
-    );
+        if (!drawing) return;
 
-    canvas.addEventListener(
-        "pointermove",
-        e => {
+        const rect =
+            canvas.getBoundingClientRect();
 
-            if (!drawing) return;
+        const x =
+            e.clientX - rect.left;
 
-            const rect =
-                canvas.getBoundingClientRect();
+        const y =
+            e.clientY - rect.top;
 
-            const x =
-                e.clientX - rect.left;
+        ctx.fillStyle = "#111827";
 
-            const y =
-                e.clientY - rect.top;
+        ctx.beginPath();
 
-            ctx.lineWidth = 3;
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
 
-            ctx.lineCap = "round";
-
-            ctx.strokeStyle = "#111";
-
-            ctx.lineTo(x, y);
-
-            ctx.stroke();
-
-            ctx.beginPath();
-
-            ctx.moveTo(x, y);
-        }
-    );
-}
+        ctx.fill();
+    }
+);
 
 
 
 
 
-/* ======================================================
+/* =========================================================
    RESIZE
-====================================================== */
+========================================================= */
 
 window.addEventListener(
     "resize",
     () => {
 
         camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
+            window.innerWidth / window.innerHeight;
 
         camera.updateProjectionMatrix();
 
@@ -835,9 +705,9 @@ window.addEventListener(
 
 
 
-/* ======================================================
+/* =========================================================
    LOOP
-====================================================== */
+========================================================= */
 
 function animate() {
 
@@ -849,3 +719,6 @@ function animate() {
 }
 
 animate();
+
+loadWorld();
+```
