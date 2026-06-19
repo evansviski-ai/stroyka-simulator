@@ -1,3 +1,4 @@
+```js
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -5,9 +6,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
     getDatabase,
     ref,
-    set,
     push,
+    onChildAdded,
+    onChildRemoved,
     remove,
+    set,
     onValue
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -19,20 +22,12 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 /* ---------------- FIREBASE ---------------- */
 
 const firebaseConfig = {
-
     apiKey: "AIzaSyCDoON8VQKnb9Eh4UtogG_aqn9P4bMlL4A",
-
     authDomain: "stroyka-bs.firebaseapp.com",
-
-    databaseURL:
-        "https://stroyka-bs-default-rtdb.europe-west1.firebasedatabase.app",
-
+    databaseURL: "https://stroyka-bs-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "stroyka-bs",
-
     storageBucket: "stroyka-bs.firebasestorage.app",
-
     messagingSenderId: "555859205094",
-
     appId: "1:555859205094:web:0a243c20597ee165161427"
 };
 
@@ -48,9 +43,7 @@ const db = getDatabase(app);
 
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x041129);
-
-scene.fog = new THREE.Fog(0x041129, 40, 120);
+scene.background = new THREE.Color(0x041126);
 
 
 
@@ -65,7 +58,7 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
-camera.position.set(20, 20, 20);
+camera.position.set(20, 18, 20);
 
 camera.lookAt(0, 0, 0);
 
@@ -79,10 +72,7 @@ const renderer = new THREE.WebGLRenderer({
     antialias: true
 });
 
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
+renderer.setSize(window.innerWidth, window.innerHeight);
 
 renderer.shadowMap.enabled = true;
 
@@ -97,7 +87,7 @@ document.body.appendChild(renderer.domElement);
 const hemi = new THREE.HemisphereLight(
     0xffffff,
     0x223344,
-    1.5
+    1.3
 );
 
 scene.add(hemi);
@@ -107,32 +97,11 @@ const dir = new THREE.DirectionalLight(
     1.2
 );
 
-dir.position.set(20, 40, 20);
+dir.position.set(20, 30, 10);
 
 dir.castShadow = true;
 
 scene.add(dir);
-
-
-
-
-
-/* ---------------- TERRAIN ---------------- */
-
-const terrain = new THREE.Mesh(
-
-    new THREE.PlaneGeometry(120, 120),
-
-    new THREE.MeshStandardMaterial({
-        color: 0x0f172a
-    })
-);
-
-terrain.rotation.x = -Math.PI / 2;
-
-terrain.receiveShadow = true;
-
-scene.add(terrain);
 
 
 
@@ -153,64 +122,156 @@ scene.add(grid);
 
 
 
-/* ---------------- RIVER ---------------- */
+/* ---------------- GROUND ---------------- */
 
-const river = new THREE.Mesh(
+const ground = new THREE.Mesh(
 
-    new THREE.PlaneGeometry(12, 120),
+    new THREE.PlaneGeometry(120, 120),
 
     new THREE.MeshStandardMaterial({
-        color: 0x1d4ed8,
-        transparent: true,
-        opacity: 0.7
+        color: 0x081425
     })
+
 );
 
-river.rotation.x = -Math.PI / 2;
+ground.rotation.x = -Math.PI / 2;
 
-river.position.y = 0.01;
+ground.receiveShadow = true;
 
-river.position.x = -18;
-
-scene.add(river);
+scene.add(ground);
 
 
 
 
 
-/* ---------------- TREES ---------------- */
+/* ---------------- LANDSCAPE ---------------- */
 
-for (let i = 0; i < 40; i++) {
+function createMountain(x, z, size, height) {
 
-    const trunk = new THREE.Mesh(
+    for (let i = 0; i < size; i++) {
 
-        new THREE.CylinderGeometry(0.2, 0.2, 2),
+        for (let j = 0; j < size; j++) {
 
-        new THREE.MeshStandardMaterial({
-            color: 0x78350f
-        })
-    );
+            const dist =
+                Math.abs(i - size / 2) +
+                Math.abs(j - size / 2);
 
-    const top = new THREE.Mesh(
+            const h = Math.max(
+                1,
+                height - Math.floor(dist)
+            );
 
-        new THREE.ConeGeometry(1, 3, 8),
+            for (let y = 0; y < h; y++) {
 
-        new THREE.MeshStandardMaterial({
-            color: 0x15803d
-        })
-    );
+                const block = new THREE.Mesh(
 
-    const x = Math.random() * 100 - 50;
-    const z = Math.random() * 100 - 50;
+                    new THREE.BoxGeometry(1, 1, 1),
 
-    trunk.position.set(x, 1, z);
+                    new THREE.MeshStandardMaterial({
+                        color: 0x5b6475
+                    })
 
-    top.position.set(x, 3, z);
+                );
 
-    scene.add(trunk);
+                block.position.set(
+                    x + i,
+                    y + 0.5,
+                    z + j
+                );
 
-    scene.add(top);
+                block.receiveShadow = true;
+                block.castShadow = true;
+
+                scene.add(block);
+            }
+        }
+    }
 }
+
+function createHill(x, z, size, height) {
+
+    for (let i = 0; i < size; i++) {
+
+        for (let j = 0; j < size; j++) {
+
+            const dist =
+                Math.abs(i - size / 2) +
+                Math.abs(j - size / 2);
+
+            const h = Math.max(
+                1,
+                height - Math.floor(dist / 2)
+            );
+
+            for (let y = 0; y < h; y++) {
+
+                const block = new THREE.Mesh(
+
+                    new THREE.BoxGeometry(1, 1, 1),
+
+                    new THREE.MeshStandardMaterial({
+                        color: 0x2e8b57
+                    })
+
+                );
+
+                block.position.set(
+                    x + i,
+                    y + 0.5,
+                    z + j
+                );
+
+                block.receiveShadow = true;
+                block.castShadow = true;
+
+                scene.add(block);
+            }
+        }
+    }
+}
+
+
+
+
+
+createMountain(-28, -28, 10, 7);
+
+createMountain(20, -25, 8, 5);
+
+createHill(-20, 18, 12, 4);
+
+createHill(18, 20, 10, 3);
+
+
+
+
+
+/* ---------------- MATERIALS ---------------- */
+
+const materials = {
+
+    cube: new THREE.MeshStandardMaterial({
+        color: 0xcbd5e1
+    }),
+
+    wall: new THREE.MeshStandardMaterial({
+        color: 0x94a3b8
+    }),
+
+    roof: new THREE.MeshStandardMaterial({
+        color: 0xdc2626
+    }),
+
+    glass: new THREE.MeshStandardMaterial({
+        color: 0x7dd3fc,
+        transparent: true,
+        opacity: 0.5
+    }),
+
+    door: new THREE.MeshStandardMaterial({
+        color: 0x78350f
+    })
+};
 
 
 
@@ -221,14 +282,26 @@ for (let i = 0; i < 40; i++) {
 const roleButtons =
     document.querySelectorAll(".role-btn");
 
-const buildToolbar =
-    document.getElementById("build-toolbar");
+const buildButtons =
+    document.querySelectorAll(".build-btn");
 
 const financePanel =
     document.getElementById("finance-panel");
 
+const buildToolbar =
+    document.getElementById("build-toolbar");
+
 const roleValue =
     document.getElementById("role-value");
+
+const moneyValue =
+    document.getElementById("money-value");
+
+
+
+
+
+/* ---------------- ROLE ---------------- */
 
 let currentRole = null;
 
@@ -251,10 +324,7 @@ roleButtons.forEach(btn => {
 
 
 
-        /* ROLE INTERFACES */
-
-        buildToolbar.style.display = "none";
-
+        buildToolbar.classList.add("hidden");
         financePanel.classList.add("hidden");
 
 
@@ -262,43 +332,31 @@ roleButtons.forEach(btn => {
 
 
         if (
-            currentRole === "workers"
+            currentRole === "workers" ||
+            currentRole === "architects"
         ) {
-
-            buildToolbar.style.display = "flex";
+            buildToolbar.classList.remove("hidden");
         }
-
-
-
-
 
         if (
             currentRole === "finance"
         ) {
-
             financePanel.classList.remove("hidden");
         }
-
     });
-
 });
 
 
 
 
 
-/* ---------------- BUILD TYPES ---------------- */
+/* ---------------- BUILD TYPE ---------------- */
 
 let currentType = "cube";
-
-const buildButtons =
-    document.querySelectorAll(".build-btn");
 
 buildButtons.forEach(btn => {
 
     btn.addEventListener("click", () => {
-
-        currentType = btn.dataset.type;
 
         buildButtons.forEach(b => {
             b.classList.remove("active-build");
@@ -306,119 +364,138 @@ buildButtons.forEach(btn => {
 
         btn.classList.add("active-build");
 
+        currentType = btn.dataset.type;
     });
-
 });
 
 
 
 
 
-/* ---------------- MATERIALS ---------------- */
+/* ---------------- MONEY ---------------- */
 
-const materials = {
+const moneyRef = ref(db, "money");
 
-    cube: new THREE.MeshStandardMaterial({
-        color: 0xcbd5e1
-    }),
+document
+    .getElementById("add-money-btn")
+    ?.addEventListener("click", () => {
 
-    wall: new THREE.MeshStandardMaterial({
-        color: 0x94a3b8
-    }),
+        set(moneyRef, currentMoney + 10000);
+    });
 
-    roof: new THREE.MeshStandardMaterial({
-        color: 0xdc2626
-    }),
+document
+    .getElementById("remove-money-btn")
+    ?.addEventListener("click", () => {
 
-    window: new THREE.MeshStandardMaterial({
-        color: 0x7dd3fc,
-        transparent: true,
-        opacity: 0.5
-    }),
+        set(moneyRef, currentMoney - 10000);
+    });
 
-    door: new THREE.MeshStandardMaterial({
-        color: 0x78350f
-    })
-};
+let currentMoney = 100000;
 
+onValue(moneyRef, snapshot => {
 
+    if (snapshot.exists()) {
+        currentMoney = snapshot.val();
+    }
 
-
-
-/* ---------------- OBJECT STORAGE ---------------- */
-
-const objects = {};
+    moneyValue.innerText =
+        currentMoney.toLocaleString("ru-RU") + " ₽";
+});
 
 
 
 
 
-/* ---------------- CREATE BLOCK ---------------- */
+/* ---------------- OBJECTS ---------------- */
 
-function createBlock(data, firebaseKey) {
+const objectsRef = ref(db, "objects");
+
+const objectMeshes = {};
+
+function createMesh(data) {
 
     let geometry;
+    let material;
 
     switch (data.type) {
 
-        case "wall":
+        case "cube":
 
             geometry =
-                new THREE.BoxGeometry(
-                    2,
-                    1,
-                    0.3
-                );
+                new THREE.BoxGeometry(1,1,1);
+
+            material = materials.cube;
 
             break;
+
+
+
+
+
+        case "wall-x":
+
+            geometry =
+                new THREE.BoxGeometry(2,1,0.3);
+
+            material = materials.wall;
+
+            break;
+
+
+
+
+
+        case "wall-z":
+
+            geometry =
+                new THREE.BoxGeometry(0.3,1,2);
+
+            material = materials.wall;
+
+            break;
+
+
+
+
 
         case "roof":
 
             geometry =
-                new THREE.ConeGeometry(
-                    1,
-                    1,
-                    4
-                );
+                new THREE.ConeGeometry(1,1,4);
+
+            material = materials.roof;
 
             break;
+
+
+
+
 
         case "window":
 
             geometry =
-                new THREE.BoxGeometry(
-                    1.2,
-                    1.2,
-                    0.1
-                );
+                new THREE.BoxGeometry(1.2,1.2,0.1);
+
+            material = materials.glass;
 
             break;
+
+
+
+
 
         case "door":
 
             geometry =
-                new THREE.BoxGeometry(
-                    1,
-                    2,
-                    0.2
-                );
+                new THREE.BoxGeometry(1,2,0.2);
+
+            material = materials.door;
 
             break;
-
-        default:
-
-            geometry =
-                new THREE.BoxGeometry(
-                    1,
-                    1,
-                    1
-                );
     }
 
-    const mesh = new THREE.Mesh(
-        geometry,
-        materials[data.type]
-    );
+    const mesh =
+        new THREE.Mesh(geometry, material);
 
     mesh.position.set(
         data.x,
@@ -427,242 +504,182 @@ function createBlock(data, firebaseKey) {
     );
 
     mesh.castShadow = true;
-
     mesh.receiveShadow = true;
 
-    mesh.userData.firebaseKey =
-        firebaseKey;
+    mesh.userData.firebaseKey = data.key;
 
     scene.add(mesh);
 
-    objects[firebaseKey] = mesh;
+    objectMeshes[data.key] = mesh;
 }
 
 
 
 
 
-/* ---------------- FIREBASE SYNC ---------------- */
-
-const blocksRef =
-    ref(db, "world/blocks");
-
-onValue(blocksRef, snapshot => {
-
-    Object.values(objects).forEach(obj => {
-        scene.remove(obj);
-    });
-
-    for (const key in objects) {
-        delete objects[key];
-    }
+onChildAdded(objectsRef, snapshot => {
 
     const data = snapshot.val();
 
-    if (!data) return;
+    data.key = snapshot.key;
 
-    Object.entries(data).forEach(
-        ([key, value]) => {
-
-            createBlock(value, key);
-        }
-    );
-
+    createMesh(data);
 });
 
 
 
 
 
-/* ---------------- BUILDING ---------------- */
+onChildRemoved(objectsRef, snapshot => {
+
+    const key = snapshot.key;
+
+    if (objectMeshes[key]) {
+
+        scene.remove(objectMeshes[key]);
+
+        delete objectMeshes[key];
+    }
+});
+
+
+
+
+
+/* ---------------- BUILD ---------------- */
 
 const raycaster = new THREE.Raycaster();
 
 const mouse = new THREE.Vector2();
 
 window.addEventListener(
-    "mousedown",
-    async event => {
-
-        if (
-            event.target.closest(
-                ".left-panel"
-            )
-        ) return;
-
-        if (
-            currentRole !== "workers"
-        ) return;
-
-
-
-
-
-        mouse.x =
-            (event.clientX /
-                window.innerWidth) * 2 - 1;
-
-        mouse.y =
-            -(event.clientY /
-                window.innerHeight) * 2 + 1;
-
-        raycaster.setFromCamera(
-            mouse,
-            camera
-        );
-
-
-
-
-
-        const meshes = [
-            terrain,
-            ...Object.values(objects)
-        ];
-
-        const intersects =
-            raycaster.intersectObjects(meshes);
-
-        if (!intersects.length) return;
-
-        const hit = intersects[0];
-
-
-
-
-
-        /* DELETE */
-
-        if (event.button === 2) {
-
-            if (
-                hit.object !== terrain
-            ) {
-
-                const key =
-                    hit.object.userData
-                        .firebaseKey;
-
-                await remove(
-                    ref(
-                        db,
-                        `world/blocks/${key}`
-                    )
-                );
-            }
-
-            return;
-        }
-
-
-
-
-
-        /* BUILD */
-
-        let x = Math.round(hit.point.x);
-
-        let y = 0.5;
-
-        let z = Math.round(hit.point.z);
-
-
-
-
-
-        if (hit.object !== terrain) {
-
-            y =
-                hit.object.position.y + 1;
-        }
-
-        await push(blocksRef, {
-
-            type: currentType,
-
-            x,
-            y,
-            z
-        });
-
-    }
-);
-
-window.addEventListener(
     "contextmenu",
     e => e.preventDefault()
 );
 
-
-
-
-
-/* ---------------- MONEY ---------------- */
-
-const moneyRef =
-    ref(db, "world/money");
-
-const moneyValue =
-    document.getElementById(
-        "money-value"
-    );
-
-onValue(moneyRef, snapshot => {
-
-    const value =
-        snapshot.val() || 100000;
-
-    moneyValue.innerText =
-        value.toLocaleString("ru-RU")
-        + " ₽";
-
-});
-
-const addMoneyBtn =
-    document.getElementById(
-        "add-money-btn"
-    );
-
-const removeMoneyBtn =
-    document.getElementById(
-        "remove-money-btn"
-    );
-
-addMoneyBtn.addEventListener(
-    "click",
-    async () => {
-
-        const current =
-            Number(
-                moneyValue.innerText
-                    .replace(/\s/g, "")
-                    .replace("₽", "")
-            );
-
-        await set(
-            moneyRef,
-            current + 10000
-        );
-    }
+window.addEventListener(
+    "mousedown",
+    onMouseDown
 );
 
-removeMoneyBtn.addEventListener(
-    "click",
-    async () => {
+function onMouseDown(event) {
 
-        const current =
-            Number(
-                moneyValue.innerText
-                    .replace(/\s/g, "")
-                    .replace("₽", "")
-            );
+    if (
+        event.target.closest(".left-panel") ||
+        event.target.closest(".topbar") ||
+        event.target.closest(".bottom-toolbar") ||
+        event.target.closest(".finance-panel")
+    ) return;
 
-        await set(
-            moneyRef,
-            current - 10000
-        );
+
+
+
+
+    mouse.x =
+        (event.clientX / window.innerWidth) * 2 - 1;
+
+    mouse.y =
+        -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+
+
+
+
+    if (event.button === 2) {
+
+        const meshes =
+            Object.values(objectMeshes);
+
+        const hits =
+            raycaster.intersectObjects(meshes);
+
+        if (hits.length > 0) {
+
+            const key =
+                hits[0].object.userData.firebaseKey;
+
+            remove(ref(db, "objects/" + key));
+        }
+
+        return;
     }
-);
+
+
+
+
+
+    if (
+        currentRole !== "workers" &&
+        currentRole !== "architects"
+    ) return;
+
+
+
+
+
+    const hits =
+        raycaster.intersectObject(ground);
+
+    if (hits.length === 0) return;
+
+
+
+
+
+    const point = hits[0].point;
+
+    const x = Math.round(point.x);
+
+    const z = Math.round(point.z);
+
+
+
+
+
+    let y = 0.5;
+
+    Object.values(objectMeshes).forEach(mesh => {
+
+        if (
+            Math.round(mesh.position.x) === x &&
+            Math.round(mesh.position.z) === z
+        ) {
+
+            y = Math.max(
+                y,
+                mesh.position.y + 1
+            );
+        }
+    });
+
+
+
+
+
+    let type = currentType;
+
+    if (type === "wall") {
+
+        if (Math.random() > 0.5) {
+            type = "wall-x";
+        } else {
+            type = "wall-z";
+        }
+    }
+
+
+
+
+
+    push(objectsRef, {
+        type,
+        x,
+        y,
+        z
+    });
+}
 
 
 
@@ -670,34 +687,20 @@ removeMoneyBtn.addEventListener(
 
 /* ---------------- RESET ---------------- */
 
-const resetBtn =
-    document.getElementById(
-        "reset-world-btn"
-    );
+document
+    .getElementById("reset-world-btn")
+    ?.addEventListener("click", async () => {
 
-resetBtn.addEventListener(
-    "click",
-    async () => {
-
-        const confirmReset =
-            confirm(
-                "Удалить весь мир?"
-            );
-
-        if (!confirmReset) return;
-
-        await set(
-            ref(db, "world"),
-            null
+        const ok = confirm(
+            "Сбросить весь проект?"
         );
 
-        await set(
-            moneyRef,
-            100000
-        );
+        if (!ok) return;
 
-    }
-);
+        await remove(ref(db, "objects"));
+
+        await set(ref(db, "money"), 100000);
+    });
 
 
 
@@ -707,55 +710,32 @@ resetBtn.addEventListener(
 
 const keys = {};
 
-window.addEventListener(
-    "keydown",
-    e => {
+window.addEventListener("keydown", e => {
+    keys[e.key.toLowerCase()] = true;
+});
 
-        keys[e.key.toLowerCase()] = true;
-    }
-);
+window.addEventListener("keyup", e => {
+    keys[e.key.toLowerCase()] = false;
+});
 
-window.addEventListener(
-    "keyup",
-    e => {
+window.addEventListener("wheel", e => {
 
-        keys[e.key.toLowerCase()] = false;
-    }
-);
+    camera.position.y += e.deltaY * 0.01;
 
-window.addEventListener(
-    "wheel",
-    e => {
-
-        camera.position.y +=
-            e.deltaY * 0.01;
-
-        camera.position.y =
-            Math.max(
-                5,
-                Math.min(
-                    80,
-                    camera.position.y
-                )
-            );
-    }
-);
+    camera.position.y = Math.max(
+        5,
+        Math.min(60, camera.position.y)
+    );
+});
 
 function updateCamera() {
 
-    const speed = 0.25;
+    const speed = 0.3;
 
-    if (keys.w)
-        camera.position.z -= speed;
-
-    if (keys.s)
-        camera.position.z += speed;
-
-    if (keys.a)
-        camera.position.x -= speed;
-
-    if (keys.d)
-        camera.position.x += speed;
+    if (keys["w"]) camera.position.z -= speed;
+    if (keys["s"]) camera.position.z += speed;
+    if (keys["a"]) camera.position.x -= speed;
+    if (keys["d"]) camera.position.x += speed;
 
     camera.lookAt(0, 0, 0);
 }
@@ -764,69 +744,20 @@ function updateCamera() {
 
 
 
-/* ---------------- MOBILE CAMERA ---------------- */
-
-let touchStartX = 0;
-let touchStartY = 0;
-
-window.addEventListener(
-    "touchstart",
-    e => {
-
-        touchStartX =
-            e.touches[0].clientX;
-
-        touchStartY =
-            e.touches[0].clientY;
-    }
-);
-
-window.addEventListener(
-    "touchmove",
-    e => {
-
-        const dx =
-            e.touches[0].clientX
-            - touchStartX;
-
-        const dy =
-            e.touches[0].clientY
-            - touchStartY;
-
-        camera.position.x -= dx * 0.02;
-
-        camera.position.z -= dy * 0.02;
-
-        touchStartX =
-            e.touches[0].clientX;
-
-        touchStartY =
-            e.touches[0].clientY;
-    }
-);
-
-
-
-
-
 /* ---------------- RESIZE ---------------- */
 
-window.addEventListener(
-    "resize",
-    () => {
+window.addEventListener("resize", () => {
 
-        camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
+    camera.aspect =
+        window.innerWidth / window.innerHeight;
 
-        camera.updateProjectionMatrix();
+    camera.updateProjectionMatrix();
 
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-    }
-);
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+});
 
 
 
@@ -836,16 +767,12 @@ window.addEventListener(
 
 function animate() {
 
-    requestAnimationFrame(
-        animate
-    );
+    requestAnimationFrame(animate);
 
     updateCamera();
 
-    renderer.render(
-        scene,
-        camera
-    );
+    renderer.render(scene, camera);
 }
 
 animate();
+```
