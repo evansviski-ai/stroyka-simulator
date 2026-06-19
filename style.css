@@ -1,4 +1,4 @@
-```css id="c3o3ux"
+```css id="a3b8xq"
 * {
     margin: 0;
     padding: 0;
@@ -19,7 +19,7 @@ body {
         sans-serif;
 
     background:
-        #07111f;
+        radial-gradient(circle at top,#102348,#050b16);
 
     color:
         white;
@@ -32,6 +32,143 @@ body {
 canvas {
 
     display: block;
+}
+
+
+
+
+
+.hidden {
+
+    display: none !important;
+}
+
+
+
+
+
+/* =========================================================
+   ROLE SCREEN
+========================================================= */
+
+.role-screen-start {
+
+    position: fixed;
+
+    inset: 0;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background:
+        radial-gradient(circle at center,#13294f,#050b16);
+
+    z-index: 9999;
+}
+
+
+
+
+
+.role-card {
+
+    width: 420px;
+
+    background:
+        rgba(10,18,35,0.96);
+
+    border:
+        1px solid rgba(255,255,255,0.08);
+
+    border-radius: 28px;
+
+    padding: 40px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 22px;
+
+    backdrop-filter:
+        blur(20px);
+
+    box-shadow:
+        0 0 60px rgba(0,0,0,0.45);
+}
+
+
+
+
+
+.role-card h1 {
+
+    font-size: 42px;
+
+    color:
+        #60a5fa;
+
+    letter-spacing: 3px;
+}
+
+
+
+
+
+.role-card p {
+
+    opacity: 0.7;
+
+    font-size: 15px;
+}
+
+
+
+
+
+.role-card select {
+
+    background:
+        rgba(255,255,255,0.06);
+
+    border: none;
+
+    color: white;
+
+    padding:
+        16px;
+
+    border-radius: 16px;
+
+    font-size: 16px;
+}
+
+
+
+
+
+.role-card button {
+
+    border: none;
+
+    cursor: pointer;
+
+    padding:
+        16px;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(90deg,#3b82f6,#38bdf8);
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: 700;
 }
 
 
@@ -52,9 +189,10 @@ canvas {
 
     width: 100%;
 
-    height: 72px;
+    height: 78px;
 
-    padding: 14px 24px;
+    padding:
+        18px 24px;
 
     display: flex;
 
@@ -63,15 +201,15 @@ canvas {
     align-items: center;
 
     background:
-        rgba(7,17,31,0.92);
+        rgba(7,17,31,0.86);
 
     backdrop-filter:
         blur(12px);
 
-    z-index: 1000;
-
     border-bottom:
         1px solid rgba(255,255,255,0.08);
+
+    z-index: 1000;
 }
 
 
@@ -80,7 +218,7 @@ canvas {
 
 .logo {
 
-    font-size: 22px;
+    font-size: 32px;
 
     font-weight: 800;
 
@@ -94,22 +232,27 @@ canvas {
 
 
 
-.money-block,
-.role-block {
-
-    background:
-        rgba(255,255,255,0.05);
-
-    padding:
-        10px 16px;
-
-    border-radius: 14px;
+.top-info {
 
     display: flex;
 
-    gap: 10px;
+    gap: 18px;
+}
 
-    align-items: center;
+
+
+
+
+.money-box,
+.role-box {
+
+    background:
+        rgba(255,255,255,0.06);
+
+    padding:
+        12px 18px;
+
+    border-radius: 16px;
 
     font-size: 14px;
 }
@@ -126,32 +269,32 @@ canvas {
 
     position: fixed;
 
-    top: 90px;
+    top: 100px;
 
-    left: 20px;
+    left: 24px;
 
     width: 260px;
 
     background:
-        rgba(10,18,35,0.92);
+        rgba(10,18,35,0.94);
 
     border:
         1px solid rgba(255,255,255,0.08);
 
-    border-radius: 22px;
+    border-radius: 28px;
 
     padding: 20px;
-
-    z-index: 1000;
 
     display: flex;
 
     flex-direction: column;
 
-    gap: 12px;
+    gap: 14px;
+
+    z-index: 1000;
 
     backdrop-filter:
-        blur(12px);
+        blur(18px);
 }
 
 
@@ -161,8 +304,6 @@ canvas {
 .panel-title {
 
     font-size: 13px;
-
-    font-weight: 700;
 
     letter-spacing: 2px;
 
@@ -175,65 +316,57 @@ canvas {
 
 
 
-.panel-divider {
-
-    height: 1px;
+#change-role-btn {
 
     background:
-        rgba(255,255,255,0.08);
-
-    margin: 10px 0;
+        linear-gradient(90deg,#2563eb,#38bdf8);
 }
 
 
 
 
 
-/* =========================================================
-   BUTTONS
-========================================================= */
+#reset-world-btn {
 
-button {
+    background:
+        linear-gradient(90deg,#991b1b,#dc2626);
+}
+
+
+
+
+
+.left-panel button {
 
     border: none;
 
-    outline: none;
-
     cursor: pointer;
-
-    transition: 0.2s ease;
-}
-
-
-
-
-
-.role-btn,
-.build-btn,
-.finance-actions button {
-
-    padding:
-        14px 16px;
-
-    border-radius: 14px;
-
-    background:
-        rgba(255,255,255,0.06);
 
     color: white;
 
-    font-size: 14px;
+    padding:
+        14px;
 
-    font-weight: 600;
+    border-radius: 16px;
+
+    font-weight: 700;
 }
 
 
 
 
 
-.role-btn:hover,
-.build-btn:hover,
-.finance-actions button:hover {
+.build-btn {
+
+    background:
+        rgba(255,255,255,0.06);
+}
+
+
+
+
+
+.build-btn:hover {
 
     background:
         rgba(96,165,250,0.25);
@@ -243,43 +376,10 @@ button {
 
 
 
-.active-role,
 .active-build {
 
     background:
-        #3b82f6 !important;
-
-    color: white;
-}
-
-
-
-
-
-.danger-btn {
-
-    padding:
-        14px;
-
-    border-radius: 14px;
-
-    background:
-        rgba(220,38,38,0.2);
-
-    color:
-        #fca5a5;
-
-    font-weight: 700;
-}
-
-
-
-
-
-.danger-btn:hover {
-
-    background:
-        rgba(220,38,38,0.4);
+        linear-gradient(90deg,#2563eb,#38bdf8);
 }
 
 
@@ -287,54 +387,14 @@ button {
 
 
 /* =========================================================
-   BUILD TOOLBAR
+   OVERLAY SCREENS
 ========================================================= */
 
-.bottom-toolbar {
+.overlay-screen {
 
     position: fixed;
 
-    bottom: 24px;
-
-    left: 50%;
-
-    transform:
-        translateX(-50%);
-
-    display: flex;
-
-    gap: 12px;
-
-    background:
-        rgba(10,18,35,0.92);
-
-    border:
-        1px solid rgba(255,255,255,0.08);
-
-    padding:
-        16px;
-
-    border-radius: 22px;
-
-    z-index: 1000;
-
-    backdrop-filter:
-        blur(12px);
-}
-
-
-
-
-
-/* =========================================================
-   ROLE SCREENS
-========================================================= */
-
-.role-screen {
-
-    position: fixed;
-
-    top: 90px;
+    top: 100px;
 
     left: 320px;
 
@@ -342,19 +402,23 @@ button {
 
     bottom: 24px;
 
-    z-index: 900;
-
-    overflow: auto;
+    z-index: 800;
 }
 
 
 
 
 
-.screen-card {
+.overlay-card {
+
+    width: 100%;
+
+    height: 100%;
+
+    overflow: auto;
 
     background:
-        rgba(10,18,35,0.94);
+        rgba(10,18,35,0.96);
 
     border:
         1px solid rgba(255,255,255,0.08);
@@ -363,18 +427,16 @@ button {
 
     padding: 28px;
 
-    min-height: 100%;
-
     backdrop-filter:
-        blur(12px);
+        blur(20px);
 }
 
 
 
 
 
-.screen-card h1,
-.screen-card h2 {
+.overlay-card h1,
+.overlay-card h2 {
 
     margin-bottom: 20px;
 
@@ -394,26 +456,22 @@ textarea {
 
     width: 100%;
 
-    min-height: 400px;
-
-    resize: vertical;
-
-    border: none;
-
-    outline: none;
-
-    border-radius: 18px;
-
-    padding: 18px;
+    min-height: 420px;
 
     background:
         rgba(255,255,255,0.06);
 
+    border: none;
+
+    border-radius: 18px;
+
     color: white;
+
+    padding: 18px;
 
     font-size: 15px;
 
-    line-height: 1.5;
+    resize: vertical;
 }
 
 
@@ -440,28 +498,66 @@ textarea {
 
 
 
-.finance-item {
+.finance-grid div {
 
     background:
-        rgba(255,255,255,0.05);
+        rgba(255,255,255,0.06);
 
     padding:
         18px;
 
     border-radius: 18px;
-
-    font-weight: 600;
 }
 
 
 
 
 
-.finance-actions {
+.finance-buttons {
 
     display: flex;
 
-    gap: 16px;
+    gap: 18px;
+}
+
+
+
+
+
+.finance-buttons button {
+
+    border: none;
+
+    cursor: pointer;
+
+    padding:
+        16px 20px;
+
+    border-radius: 16px;
+
+    color: white;
+
+    font-weight: 700;
+}
+
+
+
+
+
+#add-money-btn {
+
+    background:
+        linear-gradient(90deg,#166534,#22c55e);
+}
+
+
+
+
+
+#remove-money-btn {
+
+    background:
+        linear-gradient(90deg,#991b1b,#ef4444);
 }
 
 
@@ -502,72 +598,25 @@ textarea {
 
 
 /* =========================================================
-   HELPERS
-========================================================= */
-
-.hidden {
-
-    display: none !important;
-}
-
-
-
-
-
-/* =========================================================
    MOBILE
 ========================================================= */
 
 @media (max-width: 900px) {
 
-    .topbar {
-
-        flex-wrap: wrap;
-
-        height: auto;
-
-        gap: 12px;
-    }
-
-
-
-
-
     .left-panel {
 
         width: calc(100% - 40px);
-
-        top: 120px;
-
-        left: 20px;
     }
 
 
 
 
 
-    .role-screen {
-
-        top: 520px;
+    .overlay-screen {
 
         left: 20px;
 
-        right: 20px;
-
-        bottom: 20px;
-    }
-
-
-
-
-
-    .bottom-toolbar {
-
-        width: calc(100% - 40px);
-
-        overflow-x: auto;
-
-        justify-content: flex-start;
+        top: 420px;
     }
 
 
@@ -579,5 +628,6 @@ textarea {
         grid-template-columns:
             1fr;
     }
+
 }
 ```
