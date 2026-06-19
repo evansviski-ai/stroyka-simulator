@@ -6,7 +6,8 @@ import {
     getDatabase,
     ref,
     push,
-    onChildAdded
+    onChildAdded,
+    remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 
@@ -35,7 +36,7 @@ const blocksRef = ref(database, "blocks");
 
 
 
-/* ---------------- THREE.JS ---------------- */
+/* ---------------- THREE ---------------- */
 
 const scene = new THREE.Scene();
 
@@ -48,9 +49,7 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
-camera.position.set(12, 12, 12);
-
-camera.lookAt(0, 0, 0);
+camera.position.set(12, 14, 12);
 
 const renderer = new THREE.WebGLRenderer({
     antialias: true
@@ -119,55 +118,25 @@ ground.rotation.x = -Math.PI / 2;
 
 ground.receiveShadow = true;
 
+ground.name = "ground";
+
 scene.add(ground);
 
 
 
 
 
-/* ---------------- ROLE UI ---------------- */
+/* ---------------- STATE ---------------- */
 
-const roleButtons = document.querySelectorAll(".role-btn");
-
-roleButtons.forEach(btn => {
-
-    btn.addEventListener("click", () => {
-
-        roleButtons.forEach(b => {
-            b.classList.remove("active-role");
-        });
-
-        btn.classList.add("active-role");
-
-        console.log("ROLE:", btn.innerText);
-    });
-});
-
-
-
-
-
-/* ---------------- BUILD TYPES ---------------- */
+let currentRole = null;
 
 let currentType = "cube";
 
-const buildButtons = document.querySelectorAll(".build-btn");
+const occupied = {};
 
-buildButtons.forEach(btn => {
+const blockMap = {};
 
-    btn.addEventListener("click", () => {
-
-        currentType = btn.dataset.type;
-
-        buildButtons.forEach(b => {
-            b.classList.remove("active-build");
-        });
-
-        btn.classList.add("active-build");
-
-        console.log("BUILD:", currentType);
-    });
-});
+const blockMeshes = [];
 
 
 
@@ -204,9 +173,57 @@ const materials = {
 
 
 
+/* ---------------- ROLE UI ---------------- */
+
+const roleButtons = document.querySelectorAll(".role-btn");
+
+roleButtons.forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+        roleButtons.forEach(b => {
+            b.classList.remove("active-role");
+        });
+
+        btn.classList.add("active-role");
+
+        currentRole = btn.dataset.role;
+
+        console.log("ROLE:", currentRole);
+    });
+});
+
+
+
+
+
+/* ---------------- BUILD UI ---------------- */
+
+const buildButtons = document.querySelectorAll(".build-btn");
+
+buildButtons.forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+        currentType = btn.dataset.type;
+
+        buildButtons.forEach(b => {
+            b.classList.remove("active-build");
+        });
+
+        btn.classList.add("active-build");
+
+        console.log("BUILD:", currentType);
+    });
+});
+
+
+
+
+
 /* ---------------- CREATE BLOCK ---------------- */
 
-function createBlock(data) {
+function createBlock(id, data) {
 
     let geometry;
     let material;
@@ -279,20 +296,36 @@ function createBlock(data) {
 
     mesh.receiveShadow = true;
 
+    mesh.userData.firebaseId = id;
+
     scene.add(mesh);
+
+    blockMeshes.push(mesh);
+
+    blockMap[id] = mesh;
+
+    const key = `${data.x}_${data.z}`;
+
+    if (!occupied[key]) {
+        occupied[key] = 0;
+    }
+
+    occupied[key]++;
 }
 
 
 
 
 
-/* ---------------- FIREBASE SYNC ---------------- */
+/* ---------------- FIREBASE LOAD ---------------- */
 
 onChildAdded(blocksRef, snapshot => {
 
     const data = snapshot.val();
 
-    createBlock(data);
+    const id = snapshot.key;
+
+    createBlock(id, data);
 });
 
 
@@ -305,11 +338,26 @@ const raycaster = new THREE.Raycaster();
 
 const mouse = new THREE.Vector2();
 
-window.addEventListener("click", onClick);
+window.addEventListener("click", onLeftClick);
 
-function onClick(event) {
+window.addEventListener("contextmenu", onRightClick);
+
+
+
+
+
+/* ---------------- LEFT CLICK ---------------- */
+
+function onLeftClick(event) {
 
     if (event.target.closest(".sidebar")) return;
+
+    if (currentRole !== "workers") {
+
+        alert("Только рабочие могут строить");
+
+        return;
+    }
 
     mouse.x =
         (event.clientX / window.innerWidth) * 2 - 1;
@@ -330,18 +378,22 @@ function onClick(event) {
 
     const z = Math.round(point.z);
 
-    let y = 0.5;
+    const key = `${x}_${z}`;
+
+    const level = occupied[key] || 0;
+
+    let y = 0.5 + level;
 
     if (currentType === "door") {
-        y = 1;
+        y = 1 + level;
     }
 
     if (currentType === "roof") {
-        y = 1;
+        y = 1 + level;
     }
 
     if (currentType === "window") {
-        y = 1.2;
+        y = 1.2 + level;
     }
 
     push(blocksRef, {
@@ -350,6 +402,53 @@ function onClick(event) {
         y,
         z
     });
+}
+
+
+
+
+
+/* ---------------- REMOVE BLOCK ---------------- */
+
+function onRightClick(event) {
+
+    event.preventDefault();
+
+    if (currentRole !== "workers") {
+
+        alert("Только рабочие могут сносить");
+
+        return;
+    }
+
+    mouse.x =
+        (event.clientX / window.innerWidth) * 2 - 1;
+
+    mouse.y =
+        -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    const intersects =
+        raycaster.intersectObjects(blockMeshes);
+
+    if (intersects.length === 0) return;
+
+    const mesh = intersects[0].object;
+
+    const id = mesh.userData.firebaseId;
+
+    const pos = mesh.position;
+
+    const key = `${Math.round(pos.x)}_${Math.round(pos.z)}`;
+
+    if (occupied[key]) {
+        occupied[key]--;
+    }
+
+    scene.remove(mesh);
+
+    remove(ref(database, `blocks/${id}`));
 }
 
 
@@ -380,6 +479,46 @@ window.addEventListener("wheel", e => {
             Math.min(40, camera.position.y)
         );
 });
+
+
+
+
+
+/* ---------------- MOBILE TOUCH ---------------- */
+
+let touchStartX = 0;
+
+let touchStartY = 0;
+
+window.addEventListener("touchstart", e => {
+
+    touchStartX = e.touches[0].clientX;
+
+    touchStartY = e.touches[0].clientY;
+});
+
+window.addEventListener("touchmove", e => {
+
+    const dx =
+        e.touches[0].clientX - touchStartX;
+
+    const dy =
+        e.touches[0].clientY - touchStartY;
+
+    camera.position.x -= dx * 0.01;
+
+    camera.position.z -= dy * 0.01;
+
+    touchStartX = e.touches[0].clientX;
+
+    touchStartY = e.touches[0].clientY;
+});
+
+
+
+
+
+/* ---------------- UPDATE CAMERA ---------------- */
 
 function updateCamera() {
 
@@ -427,7 +566,7 @@ window.addEventListener("resize", () => {
 
 
 
-/* ---------------- LOOP ---------------- */
+/* ---------------- ANIMATE ---------------- */
 
 function animate() {
 
