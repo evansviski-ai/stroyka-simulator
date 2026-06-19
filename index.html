@@ -1,194 +1,547 @@
 ```html
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <title>Стройка Simulator</title>
+    <meta charset="UTF-8">
 
-  <style>
-    html, body {
-      margin:0;
-      padding:0;
-      overflow:hidden;
-      font-family: Inter, sans-serif;
-      background:#111827;
-      color:white;
-    }
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    #ui {
-      position:absolute;
-      top:0;
-      left:0;
-      width:320px;
-      height:100vh;
-      background:#1f2937;
-      z-index:10;
-      overflow:auto;
-      padding:16px;
-      box-sizing:border-box;
-      border-right:2px solid #374151;
-    }
+    <title>Стройка Simulator</title>
 
-    h1 {
-      font-size:24px;
-      margin-top:0;
-      color:#fbbf24;
-    }
 
-    h2 {
-      margin-top:24px;
-      font-size:18px;
-      color:#93c5fd;
-    }
 
-    .role-btn,
-    .tool-btn,
-    .action-btn {
-      width:100%;
-      margin-bottom:10px;
-      padding:12px;
-      border:none;
-      cursor:pointer;
-      border-radius:10px;
-      background:#374151;
-      color:white;
-      font-size:14px;
-      transition:0.2s;
-    }
 
-    .role-btn:hover,
-    .tool-btn:hover,
-    .action-btn:hover {
-      background:#4b5563;
-    }
 
-    .tool-active {
-      background:#f59e0b !important;
-      color:black;
-      font-weight:bold;
-    }
+    <style>
 
-    #hud {
-      margin-top:20px;
-      padding:12px;
-      background:#111827;
-      border-radius:10px;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    #canvas-container {
-      position:absolute;
-      left:320px;
-      top:0;
-      right:0;
-      bottom:0;
-    }
+        html,
+        body {
 
-    #chat {
-      margin-top:20px;
-    }
+            width: 100%;
+            height: 100%;
 
-    #chat-log {
-      height:160px;
-      overflow:auto;
-      background:#111827;
-      padding:8px;
-      border-radius:10px;
-      margin-bottom:10px;
-      font-size:12px;
-    }
+            overflow: hidden;
 
-    #chat-input {
-      width:100%;
-      box-sizing:border-box;
-      padding:10px;
-      border:none;
-      border-radius:8px;
-    }
+            font-family: Inter, Arial, sans-serif;
 
-    .hidden {
-      display:none;
-    }
+            background: #081225;
 
-  </style>
+            color: white;
+        }
+
+        canvas {
+            display: block;
+        }
+
+
+
+
+
+        /* ---------------- HUD ---------------- */
+
+        .hud {
+
+            position: fixed;
+
+            top: 12px;
+            left: 12px;
+            right: 12px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            z-index: 100;
+        }
+
+        .hud-card {
+
+            background: rgba(12, 20, 35, 0.88);
+
+            backdrop-filter: blur(10px);
+
+            border: 1px solid rgba(255,255,255,0.08);
+
+            border-radius: 16px;
+
+            padding: 12px 16px;
+
+            min-width: 180px;
+
+            box-shadow:
+                0 6px 18px rgba(0,0,0,0.35);
+        }
+
+        .hud-title {
+
+            font-size: 12px;
+
+            opacity: 0.7;
+
+            margin-bottom: 4px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .hud-value {
+
+            font-size: 22px;
+
+            font-weight: 700;
+        }
+
+
+
+
+
+        /* ---------------- SIDEBAR ---------------- */
+
+        .sidebar {
+
+            position: fixed;
+
+            top: 90px;
+            left: 12px;
+
+            width: 320px;
+
+            max-height: calc(100vh - 110px);
+
+            overflow-y: auto;
+
+            background: rgba(10, 16, 30, 0.92);
+
+            backdrop-filter: blur(12px);
+
+            border-radius: 22px;
+
+            padding: 18px;
+
+            z-index: 100;
+
+            border: 1px solid rgba(255,255,255,0.08);
+
+            box-shadow:
+                0 10px 24px rgba(0,0,0,0.4);
+        }
+
+        .sidebar h2 {
+
+            margin-bottom: 14px;
+
+            font-size: 18px;
+        }
+
+        .section {
+
+            margin-bottom: 24px;
+        }
+
+
+
+
+
+        /* ---------------- BUTTONS ---------------- */
+
+        button {
+
+            width: 100%;
+
+            border: none;
+
+            border-radius: 14px;
+
+            padding: 14px;
+
+            margin-bottom: 10px;
+
+            background: #1e293b;
+
+            color: white;
+
+            font-size: 15px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        button:hover {
+
+            transform: translateY(-2px);
+
+            background: #334155;
+        }
+
+        .active-role {
+
+            background: #2563eb;
+        }
+
+        .active-build {
+
+            background: #dc2626;
+        }
+
+        .danger {
+
+            background: #991b1b;
+        }
+
+        .danger:hover {
+
+            background: #b91c1c;
+        }
+
+
+
+
+
+        /* ---------------- BUILD GRID ---------------- */
+
+        .build-grid {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+        }
+
+
+
+
+
+        /* ---------------- HELP ---------------- */
+
+        .help {
+
+            font-size: 13px;
+
+            line-height: 1.5;
+
+            opacity: 0.75;
+        }
+
+
+
+
+
+        /* ---------------- MOBILE ---------------- */
+
+        @media (max-width: 768px) {
+
+            .sidebar {
+
+                width: calc(100vw - 24px);
+
+                top: auto;
+
+                bottom: 12px;
+
+                left: 12px;
+
+                max-height: 45vh;
+            }
+
+            .hud {
+
+                flex-direction: column;
+
+                align-items: stretch;
+
+                gap: 10px;
+            }
+
+            .hud-card {
+
+                min-width: auto;
+            }
+
+            button {
+
+                padding: 16px;
+
+                font-size: 16px;
+            }
+        }
+
+    </style>
+
 </head>
+
+
+
+
+
 <body>
 
-<div id="ui">
 
-  <h1>СТРОЙКА</h1>
 
-  <div id="role-select">
 
-    <h2>Выбор роли</h2>
 
-    <button class="role-btn" data-role="director">
-      Совет директоров
-    </button>
+    <!-- ---------------- HUD ---------------- -->
 
-    <button class="role-btn" data-role="finance">
-      Финансовый отдел
-    </button>
+    <div class="hud">
 
-    <button class="role-btn" data-role="workers">
-      Бригада рабочих
-    </button>
+        <div class="hud-card">
 
-    <button class="role-btn" data-role="architect">
-      Архитектурное бюро
-    </button>
+            <div class="hud-title">
+                Бюджет проекта
+            </div>
 
-    <button class="role-btn" data-role="engineer">
-      Инженерный отдел
-    </button>
+            <div
+                class="hud-value"
+                id="money-value"
+            >
+                100 000 ₽
+            </div>
 
-    <button class="role-btn" data-role="pr">
-      PR
-    </button>
+        </div>
 
-    <button class="role-btn" data-role="sales">
-      Продажи
-    </button>
 
-    <button class="role-btn" data-role="utilities">
-      ЖКХ
-    </button>
 
-    <button class="role-btn" data-role="hr">
-      HR
-    </button>
 
-  </div>
 
-  <div id="role-ui" class="hidden">
+        <div class="hud-card">
 
-    <h2 id="role-title"></h2>
+            <div class="hud-title">
+                Текущая роль
+            </div>
 
-    <div id="tools"></div>
+            <div
+                class="hud-value"
+                id="role-value"
+            >
+                Не выбрана
+            </div>
 
-    <div id="hud"></div>
+        </div>
 
-    <div id="chat">
-      <h2>Чат отдела</h2>
-
-      <div id="chat-log"></div>
-
-      <input id="chat-input" placeholder="Сообщение..." />
     </div>
 
-    <button class="action-btn" id="reset-btn">
-      Сбросить сессию
-    </button>
 
-  </div>
 
-</div>
 
-<div id="canvas-container"></div>
 
-<script type="module" src="./main.js"></script>
+    <!-- ---------------- SIDEBAR ---------------- -->
+
+    <div class="sidebar">
+
+
+
+
+        <!-- ROLES -->
+
+        <div class="section">
+
+            <h2>
+                Роли
+            </h2>
+
+            <button
+                class="role-btn"
+                data-role="directors"
+            >
+                Совет директоров
+            </button>
+
+            <button
+                class="role-btn"
+                data-role="finance"
+            >
+                Финансовый отдел
+            </button>
+
+            <button
+                class="role-btn"
+                data-role="workers"
+            >
+                Бригада рабочих
+            </button>
+
+            <button
+                class="role-btn"
+                data-role="architects"
+            >
+                Архитектурное бюро
+            </button>
+
+            <button
+                class="role-btn"
+                data-role="engineers"
+            >
+                Инженерный отдел
+            </button>
+
+            <button
+                class="role-btn"
+                data-role="pr"
+            >
+                PR
+            </button>
+
+            <button
+                class="role-btn"
+                data-role="sales"
+            >
+                Продажи
+            </button>
+
+            <button
+                class="role-btn"
+                data-role="housing"
+            >
+                ЖКХ
+            </button>
+
+            <button
+                class="role-btn"
+                data-role="hr"
+            >
+                HR
+            </button>
+
+        </div>
+
+
+
+
+
+        <!-- BUILD -->
+
+        <div class="section">
+
+            <h2>
+                Строительство
+            </h2>
+
+            <div class="build-grid">
+
+                <button
+                    class="build-btn active-build"
+                    data-type="cube"
+                >
+                    Куб
+                </button>
+
+                <button
+                    class="build-btn"
+                    data-type="wall"
+                >
+                    Стена
+                </button>
+
+                <button
+                    class="build-btn"
+                    data-type="roof"
+                >
+                    Крыша
+                </button>
+
+                <button
+                    class="build-btn"
+                    data-type="window"
+                >
+                    Окно
+                </button>
+
+                <button
+                    class="build-btn"
+                    data-type="door"
+                >
+                    Дверь
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+
+
+        <!-- FINANCE -->
+
+        <div class="section">
+
+            <h2>
+                Финансы
+            </h2>
+
+            <button id="add-money-btn">
+                +10 000 ₽
+            </button>
+
+            <button
+                class="danger"
+                id="remove-money-btn"
+            >
+                −10 000 ₽
+            </button>
+
+        </div>
+
+
+
+
+
+        <!-- HELP -->
+
+        <div class="section">
+
+            <h2>
+                Управление
+            </h2>
+
+            <div class="help">
+
+                ЛКМ — поставить объект<br>
+                ПКМ — снести объект<br><br>
+
+                WASD — движение камеры<br>
+                Колесо мыши — зум<br><br>
+
+                Mobile:<br>
+                свайп — перемещение камеры
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+
+    <!-- ---------------- MAIN ---------------- -->
+
+    <script
+        type="module"
+        src="main.js"
+    ></script>
+
+
+
+
 
 </body>
+
 </html>
 ```
