@@ -11,7 +11,13 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>STROYKA BS</title>
+    <title>
+        STROYKA BS
+    </title>
+
+
+
+
 
     <link
         rel="stylesheet"
@@ -26,9 +32,90 @@
 
 
 
+    <!-- ROLE SELECT SCREEN -->
+
+    <div
+        id="role-screen"
+        class="role-screen-start"
+    >
+
+        <div class="role-card">
+
+            <h1>
+                STROYKA BS
+            </h1>
+
+
+
+
+
+            <p>
+                Выберите роль
+            </p>
+
+
+
+
+
+            <select id="role-select">
+
+                <option value="workers">
+                    Рабочие
+                </option>
+
+                <option value="directors">
+                    Совет директоров
+                </option>
+
+                <option value="finance">
+                    Финансы
+                </option>
+
+                <option value="architects">
+                    Архитекторы
+                </option>
+
+                <option value="engineers">
+                    Инженеры
+                </option>
+
+                <option value="housing">
+                    ЖКХ
+                </option>
+
+                <option value="sales">
+                    Продажи
+                </option>
+
+                <option value="pr">
+                    PR
+                </option>
+
+                <option value="hr">
+                    HR
+                </option>
+
+            </select>
+
+
+
+
+
+            <button id="enter-btn">
+                ВОЙТИ
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+
+
     <!-- TOPBAR -->
 
-    <div class="topbar">
+    <div class="topbar hidden">
 
         <div class="logo">
             STROYKA BS
@@ -38,31 +125,29 @@
 
 
 
-        <div class="money-block">
+        <div class="top-info">
 
-            <span>
+            <div class="money-box">
+
                 БЮДЖЕТ:
-            </span>
+                <span id="money-value">
+                    100000 ₽
+                </span>
 
-            <span id="money-value">
-                100 000 ₽
-            </span>
-
-        </div>
+            </div>
 
 
 
 
 
-        <div class="role-block">
+            <div class="role-box">
 
-            <span>
                 РОЛЬ:
-            </span>
+                <span id="role-value">
+                    ---
+                </span>
 
-            <span id="role-value">
-                НЕ ВЫБРАНА
-            </span>
+            </div>
 
         </div>
 
@@ -74,191 +159,103 @@
 
     <!-- LEFT PANEL -->
 
-    <div class="left-panel">
-
-        <div class="panel-title">
-            РОЛИ
-        </div>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="directors"
-        >
-            Совет директоров
-        </button>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="finance"
-        >
-            Финансы
-        </button>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="workers"
-        >
-            Рабочие
-        </button>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="architects"
-        >
-            Архитекторы
-        </button>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="engineers"
-        >
-            Инженеры
-        </button>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="housing"
-        >
-            ЖКХ
-        </button>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="sales"
-        >
-            Продажи
-        </button>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="pr"
-        >
-            PR
-        </button>
-
-
-
-
-
-        <button
-            class="role-btn"
-            data-role="hr"
-        >
-            HR
-        </button>
-
-
-
-
-
-        <div class="panel-divider"></div>
-
-
-
-
-
-        <button
-            id="reset-world-btn"
-            class="danger-btn"
-        >
-            СБРОСИТЬ ИГРУ
-        </button>
-
-    </div>
-
-
-
-
-
-    <!-- WORKERS UI -->
-
     <div
-        class="bottom-toolbar hidden"
-        id="build-toolbar"
+        class="left-panel hidden"
+        id="left-panel"
     >
 
-        <button
-            class="build-btn active-build"
-            data-type="cube"
-        >
-            Куб
+        <button id="change-role-btn">
+            СМЕНИТЬ РОЛЬ
         </button>
 
 
 
 
 
-        <button
-            class="build-btn"
-            data-type="wall"
-        >
-            Стена
+        <button id="reset-world-btn">
+            СБРОСИТЬ МИР
         </button>
 
 
 
 
 
-        <button
-            class="build-btn"
-            data-type="roof"
+        <div
+            id="workers-tools"
+            class="hidden"
         >
-            Крыша
-        </button>
+
+            <div class="panel-title">
+                СТРОИТЕЛЬСТВО
+            </div>
 
 
 
 
 
-        <button
-            class="build-btn"
-            data-type="window"
-        >
-            Окно
-        </button>
+            <button
+                class="build-btn active-build"
+                data-type="cube"
+            >
+                Куб
+            </button>
 
 
 
 
 
-        <button
-            class="build-btn"
-            data-type="door"
-        >
-            Дверь
-        </button>
+            <button
+                class="build-btn"
+                data-type="wallX"
+            >
+                Стена X
+            </button>
+
+
+
+
+
+            <button
+                class="build-btn"
+                data-type="wallZ"
+            >
+                Стена Z
+            </button>
+
+
+
+
+
+            <button
+                class="build-btn"
+                data-type="roof"
+            >
+                Крыша
+            </button>
+
+
+
+
+
+            <button
+                class="build-btn"
+                data-type="window"
+            >
+                Окно
+            </button>
+
+
+
+
+
+            <button
+                class="build-btn"
+                data-type="door"
+            >
+                Дверь
+            </button>
+
+        </div>
 
     </div>
 
@@ -270,10 +267,10 @@
 
     <div
         id="directors-ui"
-        class="role-screen hidden"
+        class="overlay-screen hidden"
     >
 
-        <div class="screen-card">
+        <div class="overlay-card">
 
             <h1>
                 Техническое задание
@@ -283,14 +280,15 @@
 
 
 
-            <textarea id="director-notes">
+            <textarea id="director-text">
 
-Построить жилой квартал:
-- 3 жилых дома
-- парковка
-- зона отдыха
-- бюджет: 100 000 ₽
-- срок: 15 минут
+Построить:
+- 3 дома
+- парковку
+- зону отдыха
+
+Бюджет:
+100 000 ₽
 
             </textarea>
 
@@ -306,10 +304,10 @@
 
     <div
         id="finance-ui"
-        class="role-screen hidden"
+        class="overlay-screen hidden"
     >
 
-        <div class="screen-card">
+        <div class="overlay-card">
 
             <h1>
                 Финансовый отдел
@@ -321,24 +319,24 @@
 
             <div class="finance-grid">
 
-                <div class="finance-item">
-                    Куб: 500 ₽
+                <div>
+                    Куб — 500 ₽
                 </div>
 
-                <div class="finance-item">
-                    Стена: 800 ₽
+                <div>
+                    Стена — 800 ₽
                 </div>
 
-                <div class="finance-item">
-                    Крыша: 1200 ₽
+                <div>
+                    Крыша — 1200 ₽
                 </div>
 
-                <div class="finance-item">
-                    Окно: 300 ₽
+                <div>
+                    Окно — 300 ₽
                 </div>
 
-                <div class="finance-item">
-                    Дверь: 600 ₽
+                <div>
+                    Дверь — 600 ₽
                 </div>
 
             </div>
@@ -347,10 +345,10 @@
 
 
 
-            <div class="finance-actions">
+            <div class="finance-buttons">
 
                 <button id="add-money-btn">
-                    +10 000 ₽
+                    +10000 ₽
                 </button>
 
 
@@ -358,7 +356,7 @@
 
 
                 <button id="remove-money-btn">
-                    −10 000 ₽
+                    -10000 ₽
                 </button>
 
             </div>
@@ -375,15 +373,15 @@
 
     <div
         id="pr-ui"
-        class="role-screen hidden"
+        class="overlay-screen hidden"
     >
 
-        <div class="screen-card pr-layout">
+        <div class="overlay-card pr-layout">
 
-            <div class="pr-left">
+            <div>
 
                 <h2>
-                    PR-доска
+                    PR доска
                 </h2>
 
 
@@ -392,7 +390,7 @@
 
                 <canvas
                     id="pr-canvas"
-                    width="500"
+                    width="600"
                     height="400"
                 ></canvas>
 
@@ -402,10 +400,10 @@
 
 
 
-            <div class="pr-right">
+            <div>
 
                 <h2>
-                    PR-кампания
+                    PR текст
                 </h2>
 
 
@@ -414,11 +412,7 @@
 
                 <textarea id="pr-text">
 
-Жилой квартал будущего.
-Современная среда.
-Комфорт.
-Экология.
-Безопасность.
+Жилой квартал нового поколения
 
                 </textarea>
 
@@ -432,7 +426,44 @@
 
 
 
-    <!-- THREE -->
+    <!-- FIREBASE -->
+
+    <script type="module">
+
+        import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+        import {
+            getDatabase,
+            ref,
+            push,
+            onValue,
+            remove,
+            set
+        }
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+
+
+
+        window.FirebaseModules = {
+            initializeApp,
+            getDatabase,
+            ref,
+            push,
+            onValue,
+            remove,
+            set
+        };
+
+    </script>
+
+
+
+
+
+    <!-- MAIN -->
 
     <script
         type="module"
