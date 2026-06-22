@@ -1,18 +1,80 @@
-import * as THREE from "https://esm.sh/three@0.160.0";
-import { OrbitControls } from "https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+
+import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js?module";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+push,
+set,
+onValue,
+remove
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
-const STORAGE_KEY = "stroyka-bs-world";
+
+
+
+
+
+/* =========================================================
+FIREBASE
+========================================================= */
+
+const firebaseConfig = {
+apiKey: "AIzaSyCDoON8VQKnb9Eh4UtogG_aqn9P4bMlL4A",
+authDomain: "stroyka-bs.firebaseapp.com",
+databaseURL: "https://stroyka-bs-default-rtdb.europe-west1.firebasedatabase.app",
+projectId: "stroyka-bs",
+storageBucket: "stroyka-bs.firebasestorage.app",
+messagingSenderId: "555859205094",
+appId: "1:555859205094:web:0a243c20597ee165161427"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+const worldRef = ref(db, "world");
+
+
+
+
+
+
+
+/* =========================================================
+STATE
+========================================================= */
 
 const state = {
 role: null,
 money: 100000,
 buildType: "cube",
-objects: []
+objects: {}
 };
 
+
+
+
+
+
+
+/* =========================================================
+THREE
+========================================================= */
+
 const scene = new THREE.Scene();
+
 scene.background = new THREE.Color(0x07111f);
+
+
+
+
+
+
 
 const camera = new THREE.PerspectiveCamera(
 60,
@@ -21,16 +83,36 @@ window.innerWidth / window.innerHeight,
 2000
 );
 
-camera.position.set(20, 20, 20);
+camera.position.set(25, 25, 25);
+
+
+
+
+
+
 
 const renderer = new THREE.WebGLRenderer({
 antialias: true
 });
 
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
 renderer.shadowMap.enabled = true;
 
 document.body.appendChild(renderer.domElement);
+
+
+
+
+
+
+
+/* =========================================================
+CONTROLS
+========================================================= */
 
 const controls = new OrbitControls(
 camera,
@@ -38,17 +120,52 @@ renderer.domElement
 );
 
 controls.enableDamping = true;
-controls.dampingFactor = 0.08;
 
-const ambient = new THREE.AmbientLight(0xffffff, 1.1);
+controls.target.set(0, 0, 0);
+
+
+
+
+
+
+
+/* =========================================================
+LIGHT
+========================================================= */
+
+const ambient = new THREE.AmbientLight(
+0xffffff,
+1.2
+);
+
 scene.add(ambient);
 
-const dir = new THREE.DirectionalLight(0xffffff, 2);
+
+
+
+
+
+
+const dir = new THREE.DirectionalLight(
+0xffffff,
+2
+);
 
 dir.position.set(20, 40, 20);
+
 dir.castShadow = true;
 
 scene.add(dir);
+
+
+
+
+
+
+
+/* =========================================================
+GRID
+========================================================= */
 
 const grid = new THREE.GridHelper(
 120,
@@ -59,11 +176,21 @@ const grid = new THREE.GridHelper(
 
 scene.add(grid);
 
-const materials = {
-cube: new THREE.MeshStandardMaterial({
-color: 0xcbd5e1
-}),
 
+
+
+
+
+
+/* =========================================================
+MATERIALS
+========================================================= */
+
+const materials = {
+
+cube: new THREE.MeshStandardMaterial({
+    color: 0xcbd5e1
+}),
 
 wall: new THREE.MeshStandardMaterial({
     color: 0xb45309
@@ -71,6 +198,14 @@ wall: new THREE.MeshStandardMaterial({
 
 roof: new THREE.MeshStandardMaterial({
     color: 0xdc2626
+}),
+
+window: new THREE.MeshStandardMaterial({
+    color: 0x38bdf8
+}),
+
+door: new THREE.MeshStandardMaterial({
+    color: 0x78350f
 }),
 
 hill: new THREE.MeshStandardMaterial({
@@ -81,11 +216,19 @@ mountain: new THREE.MeshStandardMaterial({
     color: 0x6b7280
 })
 
-
 };
 
-function createHill(x, z, size) {
 
+
+
+
+
+
+/* =========================================================
+MAP
+========================================================= */
+
+function createHill(x, z, size) {
 
 for (let i = 0; i < size; i++) {
 
@@ -95,19 +238,23 @@ for (let i = 0; i < size; i++) {
     );
 
     mesh.position.set(
-        x + Math.random() * 4,
+        x + Math.random() * 5,
         i * 0.5,
-        z + Math.random() * 4
+        z + Math.random() * 5
     );
 
     scene.add(mesh);
 }
 
-
 }
 
-function createMountain(x, z, height) {
 
+
+
+
+
+
+function createMountain(x, z, height) {
 
 for (let y = 0; y < height; y++) {
 
@@ -128,95 +275,73 @@ for (let y = 0; y < height; y++) {
     }
 }
 
-
 }
 
+
+
+
+
+
+
 createHill(-15, -15, 8);
+
 createHill(20, -10, 10);
 
 createMountain(-25, 10, 6);
 
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-function saveWorld() {
 
 
-localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({
-        money: state.money,
-        objects: state.objects
-    })
-);
 
 
-}
-
-function loadWorld() {
 
 
-const raw = localStorage.getItem(STORAGE_KEY);
-
-if (!raw) return;
-
-const data = JSON.parse(raw);
-
-state.money = data.money || 100000;
-
-updateMoney();
-
-if (data.objects) {
-    data.objects.forEach(addObjectFromData);
-}
-
-
-}
-
-function updateMoney() {
-
-
-const el = document.getElementById("money-value");
-
-if (!el) return;
-
-el.innerText = state.money.toLocaleString() + " ₽";
-
-
-}
+/* =========================================================
+BUILD
+========================================================= */
 
 function createMesh(type) {
-
 
 let geo;
 
 if (type === "wall-x") {
+
     geo = new THREE.BoxGeometry(4, 2, 1);
 }
 
 else if (type === "wall-z") {
+
     geo = new THREE.BoxGeometry(1, 2, 4);
 }
 
 else if (type === "roof") {
+
     geo = new THREE.BoxGeometry(2, 0.5, 2);
 }
 
 else {
+
     geo = new THREE.BoxGeometry(2, 2, 2);
 }
 
-const mat =
-    materials[type.replace("-x", "").replace("-z", "")]
-    || materials.cube;
+const materialName =
+    type.replace("-x", "").replace("-z", "");
 
-return new THREE.Mesh(geo, mat);
-
+return new THREE.Mesh(
+    geo,
+    materials[materialName] || materials.cube
+);
 
 }
 
-function addObjectFromData(data) {
 
+
+
+
+
+
+function spawnObject(id, data) {
+
+if (state.objects[id]) return;
 
 const mesh = createMesh(data.type);
 
@@ -226,49 +351,82 @@ mesh.position.set(
     data.z
 );
 
-mesh.userData.placed = true;
+mesh.userData.firebaseId = id;
 
 scene.add(mesh);
 
+state.objects[id] = mesh;
 
 }
 
-function placeObject(position) {
 
 
-let type = state.buildType;
 
-if (type === "wall") {
 
-    type = Math.random() > 0.5
-        ? "wall-x"
-        : "wall-z";
+
+
+function removeObject(id) {
+
+if (!state.objects[id]) return;
+
+scene.remove(state.objects[id]);
+
+delete state.objects[id];
+
 }
 
-const mesh = createMesh(type);
 
-mesh.position.copy(position);
 
-mesh.userData.placed = true;
 
-scene.add(mesh);
 
-state.objects.push({
-    type: type,
-    x: position.x,
-    y: position.y,
-    z: position.z
+
+
+/* =========================================================
+FIREBASE SYNC
+========================================================= */
+
+onValue(worldRef, snapshot => {
+
+const data = snapshot.val() || {};
+
+Object.keys(state.objects).forEach(id => {
+
+    if (!data[id]) {
+
+        removeObject(id);
+    }
 });
 
-saveWorld();
+Object.entries(data).forEach(([id, obj]) => {
+
+    spawnObject(id, obj);
+});
+
+});
 
 
-}
+
+
+
+
+
+/* =========================================================
+CLICK
+========================================================= */
+
+const raycaster = new THREE.Raycaster();
+
+const mouse = new THREE.Vector2();
+
+
+
+
+
+
 
 renderer.domElement.addEventListener(
 "pointerdown",
-(event) => {
-
+async (event) => {
 
     if (state.role !== "workers") return;
 
@@ -294,47 +452,70 @@ renderer.domElement.addEventListener(
     );
 
     if (event.button === 0) {
-        placeObject(snapped);
+
+        let type = state.buildType;
+
+        if (type === "wall") {
+
+            type =
+                Math.random() > 0.5
+                    ? "wall-x"
+                    : "wall-z";
+        }
+
+        await push(worldRef, {
+            type,
+            x: snapped.x,
+            y: snapped.y,
+            z: snapped.z
+        });
     }
 
     if (event.button === 2) {
 
         const obj = intersects[0].object;
 
-        if (!obj.userData.placed) return;
+        if (!obj.userData.firebaseId) return;
 
-        scene.remove(obj);
-
-        state.objects = state.objects.filter(
-            item =>
-                !(
-                    item.x === obj.position.x
-                    &&
-                    item.y === obj.position.y
-                    &&
-                    item.z === obj.position.z
-                )
+        await remove(
+            ref(
+                db,
+                `world/${obj.userData.firebaseId}`
+            )
         );
-
-        saveWorld();
     }
 }
 
-
 );
+
+
+
+
+
+
 
 window.addEventListener(
 "contextmenu",
-(e) => e.preventDefault()
+e => e.preventDefault()
 );
 
-const roleSelectScreen =
+
+
+
+
+
+
+/* =========================================================
+UI
+========================================================= */
+
+const roleScreen =
 document.getElementById("role-select-screen");
 
 const roleSelect =
 document.getElementById("role-select");
 
-const enterRoleBtn =
+const enterBtn =
 document.getElementById("enter-role-btn");
 
 const roleValue =
@@ -343,57 +524,111 @@ document.getElementById("role-value");
 const buildToolbar =
 document.getElementById("build-toolbar");
 
+const directorsUI =
+document.getElementById("directors-ui");
+
+const financeUI =
+document.getElementById("finance-ui");
+
+const prUI =
+document.getElementById("pr-ui");
+
+
+
+
+
+
+
 function hideAllScreens() {
 
+buildToolbar.classList.add("hidden");
 
-if (buildToolbar) {
-    buildToolbar.classList.add("hidden");
+directorsUI.classList.add("hidden");
+
+financeUI.classList.add("hidden");
+
+prUI.classList.add("hidden");
+
 }
 
 
-}
+
+
+
+
 
 function enterRole(role) {
 
-
 state.role = role;
 
-if (roleValue) {
-    roleValue.innerText = role;
-}
+roleValue.innerText = role;
 
-if (roleSelectScreen) {
-    roleSelectScreen.classList.add("hidden");
-}
+roleScreen.classList.add("hidden");
 
 hideAllScreens();
 
 if (role === "workers") {
 
-    if (buildToolbar) {
-        buildToolbar.classList.remove("hidden");
-    }
+    buildToolbar.classList.remove("hidden");
+}
+
+if (role === "directors") {
+
+    directorsUI.classList.remove("hidden");
+}
+
+if (role === "finance") {
+
+    financeUI.classList.remove("hidden");
+}
+
+if (role === "pr") {
+
+    prUI.classList.remove("hidden");
+}
+
 }
 
 
+
+
+
+
+
+enterBtn.addEventListener(
+"click",
+() => {
+
+    enterRole(roleSelect.value);
 }
 
-if (enterRoleBtn) {
-
-
-enterRoleBtn.addEventListener(
-    "click",
-    () => {
-        enterRole(roleSelect.value);
-    }
 );
 
 
+
+
+
+
+
+document.getElementById(
+"change-role-btn"
+).addEventListener(
+"click",
+() => {
+
+    roleScreen.classList.remove("hidden");
 }
+
+);
+
+
+
+
+
+
 
 document.querySelectorAll(".build-btn")
 .forEach(btn => {
-
 
 btn.addEventListener(
     "click",
@@ -401,82 +636,193 @@ btn.addEventListener(
 
         document
             .querySelectorAll(".build-btn")
-            .forEach(b => b.classList.remove("active-build"));
+            .forEach(b => {
+
+                b.classList.remove("active-build");
+            });
 
         btn.classList.add("active-build");
 
-        state.buildType = btn.dataset.type;
+        state.buildType =
+            btn.dataset.type;
     }
 );
-
 
 });
 
-const addMoneyBtn =
-document.getElementById("add-money-btn");
-
-if (addMoneyBtn) {
 
 
-addMoneyBtn.addEventListener(
-    "click",
-    () => {
 
-        state.money += 10000;
 
-        updateMoney();
 
-        saveWorld();
-    }
-);
 
+/* =========================================================
+MONEY
+========================================================= */
+
+function updateMoney() {
+
+document.getElementById("money-value")
+    .innerText =
+    state.money.toLocaleString() + " ₽";
 
 }
 
-const removeMoneyBtn =
-document.getElementById("remove-money-btn");
-
-if (removeMoneyBtn) {
 
 
-removeMoneyBtn.addEventListener(
-    "click",
-    () => {
 
-        state.money -= 10000;
 
-        updateMoney();
 
-        saveWorld();
-    }
+
+document.getElementById(
+"add-money-btn"
+).addEventListener(
+"click",
+() => {
+
+    state.money += 10000;
+
+    updateMoney();
+}
+
 );
 
 
+
+
+
+
+
+document.getElementById(
+"remove-money-btn"
+).addEventListener(
+"click",
+() => {
+
+    state.money -= 10000;
+
+    updateMoney();
 }
 
-const resetBtn =
-document.getElementById("reset-world-btn");
-
-if (resetBtn) {
-
-
-resetBtn.addEventListener(
-    "click",
-    () => {
-
-        localStorage.removeItem(STORAGE_KEY);
-
-        location.reload();
-    }
 );
 
 
+
+
+
+
+
+/* =========================================================
+RESET
+========================================================= */
+
+document.getElementById(
+"reset-world-btn"
+).addEventListener(
+"click",
+async () => {
+
+    await set(worldRef, null);
+
+    location.reload();
 }
+
+);
+
+
+
+
+
+
+
+/* =========================================================
+PR DRAW
+========================================================= */
+
+const canvas =
+document.getElementById("pr-canvas");
+
+const ctx =
+canvas.getContext("2d");
+
+ctx.fillStyle = "white";
+
+ctx.fillRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+let drawing = false;
+
+
+
+
+
+
+
+canvas.addEventListener(
+"pointerdown",
+() => drawing = true
+);
+
+canvas.addEventListener(
+"pointerup",
+() => drawing = false
+);
+
+
+
+
+
+
+
+canvas.addEventListener(
+"pointermove",
+e => {
+
+    if (!drawing) return;
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    const x =
+        e.clientX - rect.left;
+
+    const y =
+        e.clientY - rect.top;
+
+    ctx.fillStyle = "#111827";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        4,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+}
+
+);
+
+
+
+
+
+
+
+/* =========================================================
+RESIZE
+========================================================= */
 
 window.addEventListener(
 "resize",
 () => {
-
 
     camera.aspect =
         window.innerWidth / window.innerHeight;
@@ -489,11 +835,19 @@ window.addEventListener(
     );
 }
 
-
 );
 
-function animate() {
 
+
+
+
+
+
+/* =========================================================
+LOOP
+========================================================= */
+
+function animate() {
 
 requestAnimationFrame(animate);
 
@@ -501,11 +855,8 @@ controls.update();
 
 renderer.render(scene, camera);
 
-
 }
 
 animate();
 
 updateMoney();
-
-loadWorld();
