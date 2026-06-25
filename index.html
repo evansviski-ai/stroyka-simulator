@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STROYKA BS</title>
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+<div id="role-select-screen" class="role-screen-start">
+  <div class="role-card">
+    <div class="role-card-eyebrow">Допуск на площадку</div>
+    <h1>STROYKA BS</h1>
+    <p>Выберите роль, чтобы получить доступ к своему рабочему месту.</p>
+    <select id="role-select"></select>
+    <button id="enter-role-btn">Войти на смену</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo">STROYKA BS</div>
+  <div class="top-info">
+    <div class="info-box hidden" id="topbar-budget-box">
+      <span class="info-label">Бюджет</span>
+      <span id="topbar-budget">—</span>
+    </div>
+    <div class="info-box">
+      <span class="info-label">Таймер</span>
+      <span id="timer-value">—:—</span>
+      <span id="timer-controls" class="timer-controls"></span>
+    </div>
+    <div class="info-box">
+      <span class="info-label">Роль</span>
+      <span id="role-value">не выбрана</span>
+    </div>
+    <button id="change-role-btn" class="btn small">Сменить роль</button>
+  </div>
+</div>
+
+<div id="app-root" class="app-root"></div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
